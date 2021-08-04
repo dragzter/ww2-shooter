@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://kit.fontawesome.com/ac88d674b7.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@200;300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="gallery">
+      <div id="target-1" class="target unselectable">
+        <img src="assets/zombie-fast.png" alt="Target 1" />
+      </div>
+      <div
+        class="enemy-trooper unselectable"
+        id="enemy-445bca81-8b84-e939-5d47-cc2f8b6aaccf"
+        style="top: 600px; left: 500px"
+      >
+        <img src="assets/german10.png" />
+      </div>
+      <img
+        id="player"
+        class="unselectable"
+        src="./assets/rifleman-5.png"
+        alt="firearm"
+      />
+      <!-- Remaining Rounds -->
+      <div id="messages" class="unselectable">Message</div>
+      <div id="magazine" class="unselectable"></div>
+    </div>
+    <div id="crosshair"></div>
+    <div id="tools">
+      <div class="ui-text title">Game Modes:</div>
+
+      <select name="game-select" id="game-mode">
+        <option value="time">Time Attack</option>
+        <option value="practice">Practice</option>
+        <option value="survive">Survival</option>
+      </select>
+      <select name="difficulty-select" id="game-difficulty">
+        <option value="time">Easy</option>
+        <option value="practice">Medium</option>
+        <option value="survive">Hardcore</option>
+      </select>
+      <button id="begin"><i class="fas fa-play"></i> Start</button>
+      <button id="stop"><i class="fas fa-stop"></i> Stop</button>
+      <hr />
+      <div class="ui-text title">Options:</div>
+
+      <button id="clear">
+        <i class="fas fa-eraser"></i> Clear Bullet Holes
+      </button>
+      <button id="reload"><i class="fas fa-redo"></i> Reload</button>
+
+      <div class="ui-text">
+        <i class="fab fa-stack-overflow"></i>
+        <span id="bullet-count">Rounds Fired: 0</span>
+      </div>
+      <div class="ui-text">
+        <span id="points">Points: 0</span> <i class="fas fa-medal"></i>
+      </div>
+
+      <hr />
+      <p>Press <span>R</span> to reload</p>
+      <p>Press <span>C</span> to clear bullet holes</p>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

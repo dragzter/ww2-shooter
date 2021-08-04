@@ -1,0 +1,199 @@
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #070414;
+  font-family: "Source Code Pro", monospace;
+}
+/* #crosshair {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  border: 2px solid black;
+} */
+#gallery {
+  width: 1000px;
+  height: 900px;
+  background-image: url(./assets/grass2.png);
+  background-position: center;
+  background-size: cover;
+  margin: 100px auto 20px;
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+}
+#tools {
+  width: 1000px;
+  margin: 10px auto;
+}
+#tools p {
+  color: #fff;
+}
+#tools p span {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #fff;
+  color: #222;
+  font-weight: 700;
+}
+p,
+button,
+div {
+  line-height: 1;
+}
+.ui-text {
+  padding: 7px 10px;
+  background: rgb(237, 240, 82);
+  color: #000;
+  font-weight: 600;
+  border-radius: 5px;
+}
+#tools div {
+  display: inline-block;
+}
+.bullet-hole {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #000;
+  border: 1px solid #fff;
+  border-radius: 50%;
+}
+#clear {
+  margin: auto;
+}
+img#player {
+  position: absolute;
+  bottom: -20px;
+  left: 40%;
+  width: 60px;
+  filter: drop-shadow(1px 1px 0 white) drop-shadow(-1px 1px 0 white)
+    drop-shadow(1px -1px 0 white) drop-shadow(-1px -1px 0 white);
+}
+.target {
+  width: 100px;
+  height: auto;
+  position: absolute;
+  top: 25px;
+  left: 10px;
+  z-index: 10;
+  overflow: hidden;
+  background: #ccc;
+  outline: 1px solid #000;
+}
+
+.target img {
+  width: 100%;
+  pointer-events: none;
+}
+#messages {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #f1f1f1;
+  background: rgb(126, 3, 9);
+  padding: 4px 12px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+#magazine {
+  position: absolute;
+  bottom: 4px;
+  right: 5px;
+  background: #000;
+  background-image: url(./assets/cropped-black-metal-background.png);
+  background-position: center;
+  background-size: cover;
+  padding: 3px 6px;
+  border-radius: 5px;
+}
+#magazine img {
+  display: inline-block;
+  max-width: 12px;
+}
+*.unselectable {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+button {
+  border: none;
+  background: #fff;
+  padding: 8px 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  border-radius: 5px;
+}
+button:hover {
+  background: #ee2602;
+  color: #fff;
+}
+.target-outer-ring {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  position: absolute;
+  background-color: #ee2602;
+  border: 1px solid #000;
+  overflow: hidden;
+  z-index: 10;
+}
+.target-inner-ring {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+}
+.target-bullseye {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ee2602;
+}
+select {
+  width: 150px;
+  padding: 5px 30px 5px 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  height: 29.33px;
+  line-height: 1;
+  font-weight: 600;
+  border-radius: 5px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: "Source Code Pro", monospace;
+  background: url(./assets/dropdown.png) 96% / 15% no-repeat #fff;
+}
+
+.enemy-trooper {
+  width: 70px;
+  height: auto;
+  top: 0;
+  left: 0;
+  position: absolute;
+  overflow: hidden;
+  transform: rotate(180deg);
+  z-index: 10;
+}
+.enemy-trooper img {
+  width: 100%;
+  pointer-events: none;
+}
