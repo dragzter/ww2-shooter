@@ -11,11 +11,12 @@ let clearBullets = document.querySelector("#clear");
 let reload = document.querySelector("#reload");
 let start = document.querySelector("#start");
 let stop = document.querySelector("#stop");
-let bulletCountDiv = document.querySelector("#bullet-count");
+let roundsFiredIndicator = document.querySelector("#bullet-count");
 let magazine = document.querySelector("#magazine");
 let difficultySelect = document.querySelector("#game-difficulty");
 let gameModeSelect = document.querySelector("#game-mode");
 let uiMessage = document.querySelector("#messages");
+let killsScoredIndicator = document.querySelector("#kills");
 
 // Player Stats
 let reloadSpeed = 3000;
@@ -33,6 +34,7 @@ let gameInterval;
 let points = 0;
 let bulletsFired = 0;
 let gameRound = 0;
+let kills = 0;
 
 // State vars
 let justFired = false;
@@ -177,6 +179,7 @@ function isAHit(target, e) {
     playSound("hit");
     points += 10;
     killTarget(container);
+    kills++;
   }
   placeBullet(bulletHole, e);
 }
@@ -224,7 +227,8 @@ function placeBullet(bulletEl, e) {
 // Communicate state in ui - ammo count, reload etc.
 function updateUi() {
   pointDiv.textContent = "Points: " + points;
-  bulletCountDiv.textContent = "Rounds Fired: " + bulletsFired;
+  roundsFiredIndicator.textContent = "Rounds Fired: " + bulletsFired;
+  killsScoredIndicator.textContent = "Kills: " + kills;
 }
 
 function announce(message) {
@@ -492,10 +496,6 @@ document.addEventListener("click", (e) => {
 
     // Update player ui
     updateUi();
-  } else {
-    if (reloading) {
-      announce("Realoading!");
-    }
   }
   setTimeout(() => {
     justFired = false;
@@ -504,7 +504,14 @@ document.addEventListener("click", (e) => {
 
 // Reload
 reload.addEventListener("click", () => {
+  if (reloading) return;
+  if (currentPlayerAmmo === maxPlayerAmmo) {
+    announce("Your magazine is full!");
+    return;
+  }
   reloading = true;
+  announce("Realoading!");
+
   playSound("reload");
   setTimeout(() => {
     reloading = false;
