@@ -1,31 +1,49 @@
 // Constants
-const MAX_AMMO = 25;
-const VALID_TARGETS = ["gallery", "target", "bullet", "enemy"];
-const RELOAD_SPEED = 3000;
+const VALID_TARGETS = ["battlefield", "target", "bullet", "enemy"];
 document.documentElement.style.setProperty("--animate-duration", ".5s");
 
 // DOM
 let pointDiv = document.querySelector("#points");
 let crosshair = document.querySelector("#crosshair");
 let player = document.querySelector("#player");
-let gallery = document.querySelector("#gallery");
+let battlefield = document.querySelector("#battlefield");
 let clearBullets = document.querySelector("#clear");
 let reload = document.querySelector("#reload");
-let begin = document.querySelector("#begin");
+let start = document.querySelector("#start");
 let stop = document.querySelector("#stop");
 let bulletCountDiv = document.querySelector("#bullet-count");
 let magazine = document.querySelector("#magazine");
+let difficultySelect = document.querySelector("#game-difficulty");
+let gameModeSelect = document.querySelector("#game-mode");
+let uiMessage = document.querySelector("#messages");
+
+// Player Stats
+let reloadSpeed = 3000;
+let maxPlayerAmmo = 10;
+let playerHitpoints = 100;
+let playerShootSpeed = 500;
 
 // Variables
+let currentPlayerAmmo = maxPlayerAmmo;
+let difficultyLevel = "easy";
+let gameMode = "survival";
+let gameInterval;
+
+// Trackers
+let points = 0;
 let bulletsFired = 0;
-let moveTargetInterval;
-let targetIsMoving = false;
-let playerAmmo = MAX_AMMO;
+let gameRound = 0;
+
+// State vars
+let justFired = false;
 let reloading = false;
+let targetIsMoving = false;
+
+// DEV vars
 let targetStoppedPosition = 10;
 let targetSpeed = 3;
 let intervalSpeed = 1;
-let points = 0;
+let moveTargetInterval;
 
 // SOUNDS
 let rifle1 = new Audio("assets/gun-gunshot-01.wav");
@@ -34,6 +52,7 @@ let whack = new Audio("assets/whack.wav");
 let thud = new Audio("assets/woodthud.wav");
 let reloadSound = new Audio("assets/rifle-reload.wav");
 let empty = new Audio("assets/gunempty.wav");
+let deathmoan = new Audio("assets/dying-sound.wav");
 
 // Enemy troopers
 let enemySelection = [
@@ -47,11 +66,6 @@ let enemySelection = [
   "assets/german9.png",
   "assets/german10.png",
 ];
-
-// TODO ANIMATIONS
-// const element = document.querySelector("#messages");
-// element.classList.add("animate__animated", "animate__bounceOutLeft");
-// element.addEventListener("animationend", () => {});
 
 /**
  * -------------
@@ -113,6 +127,12 @@ function playSound(sound) {
       empty.currentTime = 0;
       empty.play();
       break;
+    case "deathmoan":
+      deathmoan.currentTime = 0;
+      deathmoan.volume = 0.5;
+      deathmoan.playbackRate = 2;
+      deathmoan.play();
+      break;
   }
 }
 
@@ -131,49 +151,16 @@ addEventListener("mousemove", (e) => {
 //   crosshair.style.top = e.pageY + "px";
 // });
 
-// Make bullet holes - SHOOT
-document.addEventListener("click", (e) => {
-  let id = e.target.id;
-  console.log(id);
-  if (isValidTarget(id) && !reloading) {
-    console.log("valid target");
-    playerAmmo--;
-    // Handle hits
-    if (fireOrReload()) {
-      isAHit(id, e);
-    } else {
-      playSound("empty");
-      playerAmmo = 0;
-    }
-    // Update Bullet count
-    updateBulletCount();
-
-    // Update player ui
-    updateUi();
-  } else {
-    // TODO - update ui
-    console.log("reloading");
-  }
-});
-
-// Reload
-reload.addEventListener("click", () => {
-  reloading = true;
-  playSound("reload");
-  setTimeout(() => {
-    reloading = false;
-    reloadSound.loop = false;
-  }, RELOAD_SPEED);
-  loadWeapon();
-  playerAmmo = MAX_AMMO;
-});
-
 // Set bullet count
 function updateBulletCount() {
-  loadWeapon(playerAmmo);
+  loadWeapon(currentPlayerAmmo);
 }
 
-function reloadReminder() {}
+function reloadReminder() {
+  if (currentPlayerAmmo < 5) {
+    announce("You need to reload soon!");
+  }
+}
 
 // Hit occured, create bullet hole and play sound
 function isAHit(target, e) {
@@ -182,17 +169,43 @@ function isAHit(target, e) {
   let container = document.querySelector("#" + target);
   let bulletHole = createBulletHole();
   container.appendChild(bulletHole);
-  console.log(container);
 
-  if (e.target.classList.contains("target")) {
+  if (
+    e.target.classList.contains("target") ||
+    e.target.classList.contains("enemy")
+  ) {
     playSound("hit");
     points += 10;
+    killTarget(container);
   }
   placeBullet(bulletHole, e);
 }
 
+function killTarget(targetElement) {
+  // Get some data
+  let hitPosition = targetElement.getBoundingClientRect();
+  let targetInterval = targetElement.dataset.interval;
+
+  // Create a dead body to place
+  let casualty = makeCasualty();
+  battlefield.appendChild(casualty);
+  playSound("deathmoan");
+
+  // Stop the affected interval
+  clearInterval(targetInterval);
+
+  // Calculate where the dead body should be placed
+  let casualtyTop = hitPosition.y - 35;
+  let casualtyLeft = targetElement.dataset.left - hitPosition.width / 2;
+  casualty.style.top = casualtyTop + "px";
+  casualty.style.left = casualtyLeft + "px";
+
+  // Remove the target that was hit
+  targetElement.remove();
+}
+
 function fireOrReload() {
-  return playerAmmo >= 0;
+  return currentPlayerAmmo >= 0;
 }
 
 // What we hit is a valid target, or not
@@ -214,6 +227,19 @@ function updateUi() {
   bulletCountDiv.textContent = "Rounds Fired: " + bulletsFired;
 }
 
+function announce(message) {
+  uiMessage.textContent = message;
+  uiMessage.style.visibility = "visible";
+  uiMessage.classList.add("animate__animated", "animate__slideInLeft");
+
+  uiMessage.addEventListener("animationend", () => {
+    uiMessage.classList.remove("animate__slideInLeft");
+    setTimeout(() => {
+      uiMessage.style.visibility = "hidden";
+    }, 2000);
+  });
+}
+
 // Create bullet hole element and return it
 function createBulletHole() {
   let bulletHole = document.createElement("div");
@@ -227,7 +253,7 @@ function createBulletHole() {
 }
 
 // Load weapon
-function loadWeapon(rounds = MAX_AMMO) {
+function loadWeapon(rounds = maxPlayerAmmo) {
   resetMag();
   for (let i = 0; i < rounds; i++) {
     let img = document.createElement("img");
@@ -239,44 +265,53 @@ function loadWeapon(rounds = MAX_AMMO) {
 }
 
 // Move Target
-function moveTarget() {
-  if (targetIsMoving) {
-    return;
-  }
-  const elem = document.getElementById("target-1");
-  let pos = targetStoppedPosition;
-  let dir = targetSpeed;
-  moveTargetInterval = setInterval(frame, intervalSpeed);
+// function moveTarget() {
+//   if (targetIsMoving) {
+//     return;
+//   }
+//   const elem = document.getElementById("target-1");
+//   let pos = targetStoppedPosition;
+//   let dir = targetSpeed;
+//   moveTargetInterval = setInterval(frame, intervalSpeed);
 
-  function frame() {
-    targetIsMoving = true;
-    if (pos >= 300) {
-      dir = -targetSpeed;
-    } else if (pos <= 0) {
-      dir = targetSpeed;
-    }
-    pos += dir;
-    elem.style.left = pos + "px";
-  }
-}
+//   function frame() {
+//     targetIsMoving = true;
+//     if (pos >= 300) {
+//       dir = -targetSpeed;
+//     } else if (pos <= 0) {
+//       dir = targetSpeed;
+//     }
+//     pos += dir;
+//     elem.style.left = pos + "px";
+//   }
+// }
 // Move Target
 function moveEnemy(el) {
-  const elem = el;
+  let enemyStat = getEnemyStats();
   let pos = 1;
-  let id = setInterval(frame, 20);
-
-  function frame() {
-    if (pos < 300) {
+  let interval = setInterval(() => {
+    if (pos < 1000) {
       pos++;
+    } else {
+      console.log("enemy got through!");
+      window.clearInterval(interval);
     }
-    elem.style.top = pos + "px";
-  }
+    el.style.top = pos + "px";
+  }, enemyStat.speed);
+  el.dataset.interval = interval; // save the interval number so we can cancel later
 }
 
-function stopTargetMove() {
+// Stop target movement
+function stopTargetMove(id) {
   window.clearInterval(moveTargetInterval);
   targetIsMoving = false;
   targetStoppedPosition = document.getElementById("target-1").offsetLeft;
+}
+
+function removeTargets() {
+  document.querySelectorAll(".enemy-trooper, .casualty").forEach((trooper) => {
+    trooper.remove();
+  });
 }
 
 // Clear magazine
@@ -286,21 +321,20 @@ function resetMag() {
   });
 }
 
-function generateEnemy() {
-  const id = uuid();
-  let choice = randomInt(enemySelection.length);
-  let base = document.createElement("div");
-  let trooper = document.createElement("img");
-  trooper.src = enemySelection[choice];
-  trooper.id = "enemy-trooper-" + id;
-
-  base.classList.add("enemy-trooper", "unselectable", "enemy");
-  base.id = "enemy-" + id;
-
-  base.appendChild(trooper);
-  return base;
+function resetGame() {
+  reloading = false;
+  loadWeapon();
+  currentPlayerAmmo = maxPlayerAmmo;
+  clearBullets.click();
+  removeTargets();
+  clearInterval(gameInterval);
 }
 
+/**
+ * ====================
+ *      PRACTICE
+ * ====================
+ */
 function generateTarget() {
   // Practice targets
   const id = uuid();
@@ -323,18 +357,55 @@ function generateTarget() {
   return fullTarget;
 }
 
-function generateStartLocation() {
+/**
+ * ====================
+ *      SURVIVAL
+ * ====================
+ */
+// Generate enemy trooper
+function makeEnemy() {
+  const id = uuid();
+  let choice = randomInt(enemySelection.length);
+  let base = document.createElement("div");
+  let trooper = document.createElement("img");
+  trooper.src = enemySelection[choice];
+  trooper.id = "enemy-trooper-" + id;
+
+  base.classList.add("enemy-trooper", "unselectable", "enemy");
+  base.id = "enemy-" + id;
+  base.setAttribute.draggable = false;
+
+  base.appendChild(trooper);
+  return base;
+}
+
+function makeCasualty() {
+  const id = uuid();
+  let base = document.createElement("div");
+  let casualty = document.createElement("img");
+  casualty.src = "assets/casualty-green.png";
+  base.id = "enemy-casualty-" + id;
+  base.classList.add("enemy-casualty", "unselectable", "casualty");
+  base.appendChild(casualty);
+  return base;
+}
+
+// Randown spawn location for enemy
+function generateSpawnLocation() {
   let zones = [
     "0",
-    "100px",
-    "200px",
-    "300px",
-    "400px",
-    "500px",
-    "600px",
+    "80px",
+    "160px",
+    "240px",
+    "320px",
+    "380px",
+    "460px",
+    "540px",
+    "620px",
     "700px",
-    "800px",
-    "900px",
+    "780px",
+    "860px",
+    "940px",
   ];
   let choice = randomInt(zones.length);
   return {
@@ -343,13 +414,56 @@ function generateStartLocation() {
   };
 }
 
-function placeTarget() {
-  let target = generateEnemy();
-  let targetPosition = generateStartLocation();
-  gallery.appendChild(target);
+function createAndSpawnEnemy() {
+  let target = makeEnemy();
+  let targetPosition = generateSpawnLocation();
+  battlefield.appendChild(target);
   target.style.top = targetPosition.top;
   target.style.left = targetPosition.left;
+  target.dataset.left = parseInt(targetPosition.left);
   moveEnemy(target);
+}
+
+function startGame() {
+  let i = 0;
+  let enemyStat = getEnemyStats();
+  gameInterval = setInterval(() => {
+    if (i < enemyStat.count) {
+      i++;
+      createAndSpawnEnemy();
+    } else {
+      clearInterval(gameInterval);
+    }
+  }, enemyStat.spawnRate);
+  console.log("Started game with these stats:", { ...enemyStat });
+}
+
+function getEnemyStats() {
+  let speed, count, spawnRate;
+
+  switch (difficultyLevel) {
+    case "easy":
+      speed = 10;
+      spawnRate = 1200;
+      count = 30;
+      break;
+    case "medium":
+      speed = 8;
+      spawnRate = 1000;
+      count = 45;
+      break;
+    case "hardcore":
+      speed = 4;
+      spawnRate = 400;
+      count = 60;
+      break;
+  }
+
+  return {
+    speed,
+    count,
+    spawnRate,
+  };
 }
 
 /**
@@ -357,6 +471,48 @@ function placeTarget() {
  *    EVENTS   *
  * *************
  */
+// Make bullet holes - SHOOT
+document.addEventListener("click", (e) => {
+  if (justFired) {
+    return;
+  }
+  justFired = true;
+  let id = e.target.id;
+  if (isValidTarget(id) && !reloading) {
+    currentPlayerAmmo--;
+    // Handle hits
+    if (fireOrReload()) {
+      isAHit(id, e);
+    } else {
+      playSound("empty");
+      currentPlayerAmmo = 0;
+    }
+    // Update Bullet count
+    updateBulletCount();
+
+    // Update player ui
+    updateUi();
+  } else {
+    if (reloading) {
+      announce("Realoading!");
+    }
+  }
+  setTimeout(() => {
+    justFired = false;
+  }, playerShootSpeed);
+});
+
+// Reload
+reload.addEventListener("click", () => {
+  reloading = true;
+  playSound("reload");
+  setTimeout(() => {
+    reloading = false;
+    reloadSound.loop = false;
+    loadWeapon();
+    currentPlayerAmmo = maxPlayerAmmo;
+  }, reloadSpeed);
+});
 
 // Clear bullets
 clearBullets.addEventListener("click", () => {
@@ -364,18 +520,26 @@ clearBullets.addEventListener("click", () => {
   bullets.forEach((hole) => {
     hole.remove();
   });
-  //bulletsFired = 0;
-  //bulletCountDiv.textContent = "Rounds Fired: " + bulletsFired;
 });
 
-begin.addEventListener("click", () => {
-  moveTarget();
+start.addEventListener("click", () => {
+  let selectedDifficulty = difficultySelect.value;
+  let selectedMode = gameModeSelect.value;
+  resetGame();
+
+  startGame(selectedDifficulty, selectedMode);
 });
 
+// Stop game
 stop.addEventListener("click", () => {
-  stopTargetMove();
+  let endgame = confirm("Are you sure you want to end the game?");
+
+  if (endgame) {
+    resetGame();
+  }
 });
 
+// Handle some key binds
 document.addEventListener("keydown", function (event) {
   if (event.code == "KeyR") {
     reload.click();
@@ -385,18 +549,17 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
+// Set game properties
+difficultySelect.addEventListener("change", (e) => {
+  difficultyLevel = e.target.value;
+});
+
+gameModeSelect.addEventListener("change", (e) => {
+  gameMode = e.target.value;
+});
+
 function init() {
-  loadWeapon(MAX_AMMO);
-  let i = 0;
-  let interval = setInterval(() => {
-    console.log("running ", i);
-    if (i < 2) {
-      i++;
-      placeTarget();
-    } else {
-      clearInterval(interval);
-    }
-  }, 1000);
+  loadWeapon(maxPlayerAmmo);
 }
 
 window.onload = () => {
