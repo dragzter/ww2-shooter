@@ -1,5 +1,5 @@
 // Constants
-const VALID_TARGETS = ["battlefield", "target", "bullet", "enemy"];
+const VALID_TARGETS = ["battlefield", "target", "bullet", "enemy", "trooper"];
 document.documentElement.style.setProperty("--animate-duration", ".5s");
 
 // DOM
@@ -26,7 +26,7 @@ let playerShootSpeed = 500;
 
 // Variables
 let currentPlayerAmmo = maxPlayerAmmo;
-let difficultyLevel = "easy";
+let difficultyLevel = "teasy";
 let gameMode = "survival";
 let gameInterval;
 
@@ -127,6 +127,7 @@ function playSound(sound) {
       break;
     case "empty":
       empty.currentTime = 0;
+      empty.volume = 0.6;
       empty.play();
       break;
     case "deathmoan":
@@ -153,11 +154,6 @@ addEventListener("mousemove", (e) => {
 //   crosshair.style.top = e.pageY + "px";
 // });
 
-// Set bullet count
-function updateBulletCount() {
-  loadWeapon(currentPlayerAmmo);
-}
-
 function reloadReminder() {
   if (currentPlayerAmmo < 5) {
     announce("You need to reload soon!");
@@ -174,7 +170,7 @@ function isAHit(target, e) {
 
   if (
     e.target.classList.contains("target") ||
-    e.target.classList.contains("enemy")
+    e.target.classList.contains("trooper")
   ) {
     playSound("hit");
     points += 10;
@@ -366,32 +362,38 @@ function generateTarget() {
  *      SURVIVAL
  * ====================
  */
-// Generate enemy trooper
-function makeEnemy() {
+
+/**
+ *
+ * @param {node} object - The node being appended to the base
+ * @param {string} identifier - string identifier
+ * @returns base - the composed html element.
+ */
+function generateItem(object, identifier) {
   const id = uuid();
-  let choice = randomInt(enemySelection.length);
   let base = document.createElement("div");
-  let trooper = document.createElement("img");
-  trooper.src = enemySelection[choice];
-  trooper.id = "enemy-trooper-" + id;
-
-  base.classList.add("enemy-trooper", "unselectable", "enemy");
-  base.id = "enemy-" + id;
   base.setAttribute.draggable = false;
+  base.id = `base-${identifier}-${id}`;
+  base.classList.add("unselectable", identifier);
 
-  base.appendChild(trooper);
+  object.id = `${identifier}-${id}`;
+  base.appendChild(object);
   return base;
 }
 
+// Generate enemy trooper
+function makeEnemy() {
+  let choice = randomInt(enemySelection.length);
+  let trooper = document.createElement("img");
+  trooper.src = enemySelection[choice];
+  return generateItem(trooper, "trooper");
+}
+
+// Create a casualty
 function makeCasualty() {
-  const id = uuid();
-  let base = document.createElement("div");
   let casualty = document.createElement("img");
   casualty.src = "assets/casualty-green.png";
-  base.id = "enemy-casualty-" + id;
-  base.classList.add("enemy-casualty", "unselectable", "casualty");
-  base.appendChild(casualty);
-  return base;
+  return generateItem(casualty, "casualty");
 }
 
 // Randown spawn location for enemy
@@ -429,37 +431,60 @@ function createAndSpawnEnemy() {
 }
 
 function startGame() {
-  let i = 0;
   let enemyStat = getEnemyStats();
+  console.log("Starting game: ", { ...enemyStat });
+  startEnemeyWave();
+  // establish win conditions
+}
+
+function startEnemeyWave() {
+  let waveProperties = getEnemyStats();
+  let i = 0;
   gameInterval = setInterval(() => {
-    if (i < enemyStat.count) {
+    if (i < waveProperties.count) {
       i++;
       createAndSpawnEnemy();
     } else {
       clearInterval(gameInterval);
+      // All spawns complete, deployed troops may still be moving
+      console.log("All enemy troops deployed");
     }
-  }, enemyStat.spawnRate);
-  console.log("Started game with these stats:", { ...enemyStat });
+  }, waveProperties.spawnRate);
 }
 
 function getEnemyStats() {
   let speed, count, spawnRate;
 
   switch (difficultyLevel) {
+    case "teasy":
+      speed = 20;
+      spawnRate = 2400;
+      count = 26;
+      break;
     case "easy":
-      speed = 10;
-      spawnRate = 1200;
+      speed = 18;
+      spawnRate = 2000;
       count = 30;
       break;
     case "medium":
-      speed = 8;
-      spawnRate = 1000;
+      speed = 16;
+      spawnRate = 1600;
       count = 45;
       break;
+    case "hard":
+      speed = 12;
+      spawnRate = 1400;
+      count = 55;
+      break;
     case "hardcore":
+      speed = 8;
+      spawnRate = 1200;
+      count = 65;
+      break;
+    case "impossible":
       speed = 4;
-      spawnRate = 400;
-      count = 60;
+      spawnRate = 900;
+      count = 100;
       break;
   }
 
@@ -492,7 +517,7 @@ document.addEventListener("click", (e) => {
       currentPlayerAmmo = 0;
     }
     // Update Bullet count
-    updateBulletCount();
+    loadWeapon(currentPlayerAmmo);
 
     // Update player ui
     updateUi();

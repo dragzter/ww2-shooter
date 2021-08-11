@@ -134,7 +134,7 @@ img#player {
   padding: 3px 6px;
   border-radius: 5px;
 }
-.enemy-casualty {
+.casualty {
   position: absolute;
   width: 110px;
   z-index: 1;
@@ -142,7 +142,7 @@ img#player {
   left: 100px;
   pointer-events: none;
 }
-.enemy-casualty img {
+.casualty img {
   width: 100%;
   height: auto;
 }
@@ -217,7 +217,7 @@ select {
   background: url(./assets/dropdown.png) 96% / 15% no-repeat #fff;
 }
 
-.enemy-trooper {
+.trooper {
   width: 70px;
   height: auto;
   top: 0;
@@ -227,7 +227,7 @@ select {
   transform: rotate(180deg);
   z-index: 10;
 }
-.enemy-trooper img {
+.trooper img {
   width: 100%;
   pointer-events: none;
 }
