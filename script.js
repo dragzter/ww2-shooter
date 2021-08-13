@@ -17,29 +17,38 @@ let difficultySelect = document.querySelector("#game-difficulty");
 let gameModeSelect = document.querySelector("#game-mode");
 let uiMessage = document.querySelector("#messages");
 let killsScoredIndicator = document.querySelector("#kills");
+let hitpointsDiv = document.querySelector("#hp");
+let maxAmmoDiv = document.querySelector("#maxAmmo");
+let gameRoundDiv = document.querySelector("#round");
+let playerCover = document.querySelector("#cover");
 
 // Player Stats
 let reloadSpeed = 3000;
 let maxPlayerAmmo = 10;
-let playerHitpoints = 100;
+let maxPlayerHitpoints = 100;
 let playerShootSpeed = 500;
 
 // Variables
 let currentPlayerAmmo = maxPlayerAmmo;
+let currentPlayerHitpoints = maxPlayerHitpoints;
 let difficultyLevel = "teasy";
 let gameMode = "survival";
 let gameInterval;
+let msgInterval;
+let playerDamageTaken = 10;
 
 // Trackers
 let points = 0;
 let bulletsFired = 0;
-let gameRound = 0;
+let gameRound = 1;
 let kills = 0;
+let enemyCount = 0;
 
 // State vars
 let justFired = false;
 let reloading = false;
 let targetIsMoving = false;
+let playerDefeated = false;
 
 // DEV vars
 let targetStoppedPosition = 10;
@@ -55,6 +64,8 @@ let thud = new Audio("assets/woodthud.wav");
 let reloadSound = new Audio("assets/rifle-reload.wav");
 let empty = new Audio("assets/gunempty.wav");
 let deathmoan = new Audio("assets/dying-sound.wav");
+let defeatedSound = new Audio("assets/defeat.wav");
+let victorySound = new Audio("assets/victory.wav");
 
 // Enemy troopers
 let enemySelection = [
@@ -111,7 +122,7 @@ function playSound(sound) {
   switch (sound) {
     case "garand":
       garand.pause();
-      garand.currentTime = 0;
+      garand.currentTime = 0.02;
       garand.play();
       break;
     case "hit":
@@ -131,10 +142,20 @@ function playSound(sound) {
       empty.play();
       break;
     case "deathmoan":
-      deathmoan.currentTime = 0;
-      deathmoan.volume = 0.5;
-      deathmoan.playbackRate = 2;
-      deathmoan.play();
+      // deathmoan.currentTime = 0;
+      // deathmoan.volume = 0.5;
+      // deathmoan.playbackRate = 2;
+      // deathmoan.play();
+      break;
+    case "defeat":
+      defeatedSound.currentTime = 0;
+      defeatedSound.volume = 0.8;
+      defeatedSound.play();
+      break;
+    case "victory":
+      victorySound.currentTime = 0;
+      victorySound.volume = 0.8;
+      victorySound.play();
       break;
   }
 }
@@ -148,12 +169,6 @@ addEventListener("mousemove", (e) => {
   player.style.transform = `rotate(${angle + 1.5}rad)`;
 });
 
-// // Crosshair tracking
-// document.addEventListener("mousemove", (e) => {
-//   crosshair.style.left = e.pageX + "px";
-//   crosshair.style.top = e.pageY + "px";
-// });
-
 function reloadReminder() {
   if (currentPlayerAmmo < 5) {
     announce("You need to reload soon!");
@@ -162,7 +177,6 @@ function reloadReminder() {
 
 // Hit occured, create bullet hole and play sound
 function isAHit(target, e) {
-  playSound("garand");
   bulletsFired++;
   let container = document.querySelector("#" + target);
   let bulletHole = createBulletHole();
@@ -176,8 +190,28 @@ function isAHit(target, e) {
     points += 10;
     killTarget(container);
     kills++;
+    if (isRoundCompleted()) {
+      winRound();
+    }
   }
   placeBullet(bulletHole, e);
+}
+
+function nextRoundCountDown() {
+  // TODO
+  // Create a 3 second timer to show a countdown to the next round based on the selected difficulty.
+}
+
+function winRound() {
+  announce("Round " + gameRound + " is completed!");
+  playSound("victory");
+  advanceToNextRound();
+}
+
+function advanceToNextRound() {
+  gameRound++;
+  resetGame();
+  updateUi();
 }
 
 function killTarget(targetElement) {
@@ -188,7 +222,7 @@ function killTarget(targetElement) {
   // Create a dead body to place
   let casualty = makeCasualty();
   battlefield.appendChild(casualty);
-  playSound("deathmoan");
+  //playSound("deathmoan");
 
   // Stop the affected interval
   clearInterval(targetInterval);
@@ -225,18 +259,25 @@ function updateUi() {
   pointDiv.textContent = "Points: " + points;
   roundsFiredIndicator.textContent = "Rounds Fired: " + bulletsFired;
   killsScoredIndicator.textContent = "Kills: " + kills;
+  hitpointsDiv.textContent = "Hitpoints: " + currentPlayerHitpoints;
+  gameRoundDiv.textContent = "Round: " + gameRound;
 }
 
-function announce(message) {
+/**
+ * Game announcement for various events
+ * @param {string} message
+ */
+function announce(message = "Unknown event") {
+  window.clearInterval(msgInterval);
   uiMessage.textContent = message;
   uiMessage.style.visibility = "visible";
   uiMessage.classList.add("animate__animated", "animate__slideInLeft");
 
   uiMessage.addEventListener("animationend", () => {
     uiMessage.classList.remove("animate__slideInLeft");
-    setTimeout(() => {
+    msgInterval = setTimeout(() => {
       uiMessage.style.visibility = "hidden";
-    }, 2000);
+    }, 4000);
   });
 }
 
@@ -290,15 +331,43 @@ function moveEnemy(el) {
   let enemyStat = getEnemyStats();
   let pos = 1;
   let interval = setInterval(() => {
-    if (pos < 1000) {
+    if (pos < 900) {
       pos++;
     } else {
-      console.log("enemy got through!");
       window.clearInterval(interval);
+      damagePlayer();
     }
     el.style.top = pos + "px";
   }, enemyStat.speed);
   el.dataset.interval = interval; // save the interval number so we can cancel later
+}
+
+function playerIsOutOfHp() {
+  return currentPlayerHitpoints <= 0;
+}
+
+function damagePlayer() {
+  announce("A enemy has broken through!");
+  currentPlayerHitpoints -= playerDamageTaken;
+  console.log("taking " + playerDamageTaken + " damage!");
+
+  if (playerIsOutOfHp()) {
+    currentPlayerHitpoints = 0;
+    defeat();
+  }
+
+  updateUi();
+}
+
+function defeat() {
+  announce("You have died!");
+  resetGame();
+  currentPlayerAmmo = 0;
+  playerDefeated = true;
+  kills = 0;
+  points = 0;
+  playSound("defeat");
+  hideUiElements();
 }
 
 // Stop target movement
@@ -309,10 +378,13 @@ function stopTargetMove(id) {
 }
 
 function removeTargets() {
-  document.querySelectorAll(".enemy-trooper, .casualty").forEach((trooper) => {
+  document.querySelectorAll(".trooper, .casualty").forEach((trooper) => {
+    clearInterval(trooper.dataset.interval);
     trooper.remove();
   });
 }
+
+function gameStatus() {}
 
 // Clear magazine
 function resetMag() {
@@ -322,9 +394,10 @@ function resetMag() {
 }
 
 function resetGame() {
+  enemyCount = 0;
   reloading = false;
-  loadWeapon();
   currentPlayerAmmo = maxPlayerAmmo;
+  loadWeapon();
   clearBullets.click();
   removeTargets();
   clearInterval(gameInterval);
@@ -421,6 +494,7 @@ function generateSpawnLocation() {
 }
 
 function createAndSpawnEnemy() {
+  enemyCount++;
   let target = makeEnemy();
   let targetPosition = generateSpawnLocation();
   battlefield.appendChild(target);
@@ -431,10 +505,35 @@ function createAndSpawnEnemy() {
 }
 
 function startGame() {
+  initializeStartValues();
+  showUiElements();
+  logStartGame();
+  startEnemeyWave();
+}
+
+function initializeStartValues() {
+  currentPlayerHitpoints = maxPlayerHitpoints;
+  playerDefeated = false;
+  updateUi();
+}
+
+function logStartGame() {
   let enemyStat = getEnemyStats();
   console.log("Starting game: ", { ...enemyStat });
-  startEnemeyWave();
-  // establish win conditions
+}
+
+function hideUiElements() {
+  playerCover.style.display = "none";
+  player.style.display = "none";
+  magazine.style.display = "none";
+  gameRoundDiv.style.display = "none";
+}
+
+function showUiElements() {
+  playerCover.style.display = "block";
+  player.style.display = "block";
+  magazine.style.display = "block";
+  gameRoundDiv.style.display = "inline-block";
 }
 
 function startEnemeyWave() {
@@ -446,10 +545,17 @@ function startEnemeyWave() {
       createAndSpawnEnemy();
     } else {
       clearInterval(gameInterval);
-      // All spawns complete, deployed troops may still be moving
-      console.log("All enemy troops deployed");
     }
   }, waveProperties.spawnRate);
+}
+
+function isRoundCompleted() {
+  let waveProperties = getEnemyStats();
+  return kills === waveProperties.count;
+}
+
+function resetRound() {
+  rounds = 0;
 }
 
 function getEnemyStats() {
@@ -459,31 +565,37 @@ function getEnemyStats() {
     case "teasy":
       speed = 20;
       spawnRate = 2400;
-      count = 26;
+      playerDamageTaken = 8;
+      count = 2;
       break;
     case "easy":
       speed = 18;
       spawnRate = 2000;
+      playerDamageTaken = 10;
       count = 30;
       break;
     case "medium":
       speed = 16;
       spawnRate = 1600;
+      playerDamageTaken = 15;
       count = 45;
       break;
     case "hard":
       speed = 12;
       spawnRate = 1400;
+      playerDamageTaken = 18;
       count = 55;
       break;
     case "hardcore":
       speed = 8;
       spawnRate = 1200;
+      playerDamageTaken = 25;
       count = 65;
       break;
     case "impossible":
       speed = 4;
       spawnRate = 900;
+      playerDamageTaken = 30;
       count = 100;
       break;
   }
@@ -502,15 +614,17 @@ function getEnemyStats() {
  */
 // Make bullet holes - SHOOT
 document.addEventListener("click", (e) => {
-  if (justFired) {
+  if (justFired || playerDefeated) {
     return;
   }
   justFired = true;
   let id = e.target.id;
   if (isValidTarget(id) && !reloading) {
     currentPlayerAmmo--;
+
     // Handle hits
     if (fireOrReload()) {
+      playSound("garand");
       isAHit(id, e);
     } else {
       playSound("empty");

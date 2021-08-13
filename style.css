@@ -63,6 +63,10 @@ div {
   padding: 3px 6px;
   margin: 2px;
 }
+#hud #round {
+  background: #182a8f;
+  display: none;
+}
 .ui-text {
   padding: 7px 10px;
   background: rgb(237, 240, 82);
