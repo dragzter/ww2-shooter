@@ -10,6 +10,10 @@ body {
   position: absolute;
   bottom: -20px;
   left: 28%;
+  display: none;
+}
+.invisible {
+  visibility: hidden;
 }
 /* #crosshair {
   position: absolute;
@@ -20,6 +24,9 @@ body {
   border-radius: 50%;
   border: 2px solid black;
 } */
+.no-interact {
+  pointer-events: none;
+}
 #battlefield {
   width: 1000px;
   height: 900px;
@@ -129,6 +136,7 @@ img#player {
 }
 #magazine {
   position: absolute;
+  display: none;
   bottom: 4px;
   right: 5px;
   background: #000;
@@ -235,3 +243,47 @@ select {
   width: 100%;
   pointer-events: none;
 }
+#gameModal {
+  position: absolute;
+  max-width: 600px;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 40px;
+  background-color: rgb(240, 240, 240);
+  border-radius: 3px;
+}
+#modalRound {
+  background: #463db1;
+  color: #fff;
+  display: inline-block;
+  padding: 12px;
+  width: auto;
+  border-radius: 3px;
+}
+#modal-screen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.7);
+}
+.round-menu {
+  margin-top: 10px;
+}
+.round-menu .round {
+  width: 100%;
+}
+.round-menu #start {
+  border: 1px solid #000;
+  padding: 12px 20px;
+}
+.round-menu #start:hover {
+  border-color: #ee2602;
+}
+.bg-caen {
+  background-color: #79ffe8;
+}
+/* #roundSummary {
+  display: none;
+} */

@@ -22,13 +22,53 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div id="battlefield">
+    <div id="modal-screen">
+      <div id="gameModal" class="animate__animated animate__zoomIn">
+        <div class="modal-body">
+          <div id="intro">
+            <h1>Welcome to Lone Rifleman.</h1>
+            <hr />
+            <p>
+              You are the last living member of your Rifle company defending a
+              medical convoy. Your last order was to hold off the German attack
+              at any cost. Do not let the enemy pass or you will be overrun and
+              the men being evacuated will be killed. The enemy waves will be
+              progressively stronger, arm yourself well. <br /><br />Much
+              depends on your accuracy!
+            </p>
+
+            <p>Select Difficulty and press "Start"</p>
+            <select name="difficulty-select" id="game-difficulty">
+              <option selected value="teasy">Too Easy</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+              <option value="hardcore">Hardcore</option>
+              <option value="impossible">Impossible</option>
+            </select>
+            <hr />
+          </div>
+
+          <div class="round-menu">
+            <h3><span class="round" id="modalRound">Round: 1</span></h3>
+            <div id="roundSummary">
+              <h3>Enemey Stats</h3>
+              <p id="e-speed"></p>
+              <p id="e-spawnrate"></p>
+              <p id="e-count"></p>
+            </div>
+            <button id="start"><i class="fas fa-play"></i> Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="battlefield" class="no-interact">
       <div id="hud" class="unselectable">
         <span id="hp">Hitpoints: 100</span>
         <span id="shootSpeed">Shooting Speed: 400ms</span>
         <span id="reloadTime">Reload Speed: 3s</span>
         <span id="maxAmmo">Max Ammo: 10</span>
-        <span id="round">Round: 1</span>
+        <span class="round" id="round">Round: 1</span>
       </div>
       <img
         draggable="false"
@@ -39,7 +79,7 @@
       />
       <img
         id="player"
-        class="unselectable"
+        class="unselectable invisible"
         src="./assets/rifleman-5.png"
         alt="player"
         draggable="false"
@@ -51,27 +91,16 @@
     </div>
     <div id="crosshair"></div>
     <div id="tools" draggable="false">
-      <div class="ui-text title">Game Modes:</div>
+      <!-- <div class="ui-text title">Game Modes:</div> -->
 
-      <select name="game-select" id="game-mode">
+      <!-- <select name="game-select" id="game-mode">
         <option selected value="survival">Survival</option>
-      </select>
-      <select name="difficulty-select" id="game-difficulty">
-        <option selected value="teasy">Too Easy</option>
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-        <option value="hardcore">Hardcore</option>
-        <option value="impossible">Impossible</option>
-      </select>
-      <button id="start"><i class="fas fa-play"></i> Start</button>
-      <button id="stop"><i class="fas fa-stop"></i> Stop</button>
-      <hr />
+      </select> -->
+
+      <!-- <button id="stop"><i class="fas fa-stop"></i> Stop</button> -->
       <div class="ui-text title">Options:</div>
 
-      <button id="clear">
-        <i class="fas fa-eraser"></i> Clear Bullet Holes
-      </button>
+      <button id="clear"><i class="fas fa-eraser"></i> Clear</button>
       <button id="reload"><i class="fas fa-redo"></i> Reload</button>
 
       <div class="ui-text">
@@ -83,6 +112,10 @@
       </div>
       <div class="ui-text">
         <span id="kills">Kills: 0</span> <i class="fas fa-skull-crossbones"></i>
+      </div>
+      <div class="ui-text bg-caen">
+        <span id="tkills">Total Kills: 0</span>
+        <i class="fas fa-skull-crossbones"></i>
       </div>
       <hr />
       <p>Press <span>R</span> to reload</p>

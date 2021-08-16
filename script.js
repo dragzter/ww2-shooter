@@ -10,17 +10,24 @@ let battlefield = document.querySelector("#battlefield");
 let clearBullets = document.querySelector("#clear");
 let reload = document.querySelector("#reload");
 let start = document.querySelector("#start");
-let stop = document.querySelector("#stop");
+//let stop = document.querySelector("#stop");
 let roundsFiredIndicator = document.querySelector("#bullet-count");
 let magazine = document.querySelector("#magazine");
 let difficultySelect = document.querySelector("#game-difficulty");
 let gameModeSelect = document.querySelector("#game-mode");
 let uiMessage = document.querySelector("#messages");
 let killsScoredIndicator = document.querySelector("#kills");
+let totalKillsScoredIndicator = document.querySelector("#tkills");
 let hitpointsDiv = document.querySelector("#hp");
 let maxAmmoDiv = document.querySelector("#maxAmmo");
-let gameRoundDiv = document.querySelector("#round");
+let gameRoundDiv = document.querySelectorAll(".round");
 let playerCover = document.querySelector("#cover");
+let modal = document.querySelector("#modal-screen");
+let introText = document.querySelector("#intro");
+let roundSummary = document.querySelector("#roundSummary");
+let summarySpeed = document.querySelector("#e-speed");
+let summarySpawnRate = document.querySelector("#e-spawnrate");
+let summaryEnemyCount = document.querySelector("#e-count");
 
 // Player Stats
 let reloadSpeed = 3000;
@@ -35,14 +42,22 @@ let difficultyLevel = "teasy";
 let gameMode = "survival";
 let gameInterval;
 let msgInterval;
-let playerDamageTaken = 10;
+
+// Base enemy stats
+let enemySpeed = 1;
+let waveCount = 20;
+let enemySpawnFrequency = 2400;
+let playerDamageTaken = 5;
+let pointsEarned = 10;
 
 // Trackers
 let points = 0;
 let bulletsFired = 0;
 let gameRound = 1;
 let kills = 0;
+let totalKills = 0;
 let enemyCount = 0;
+let enemyBrokenThrough = 0;
 
 // State vars
 let justFired = false;
@@ -187,31 +202,41 @@ function isAHit(target, e) {
     e.target.classList.contains("trooper")
   ) {
     playSound("hit");
-    points += 10;
+    points += pointsEarned;
     killTarget(container);
     kills++;
-    if (isRoundCompleted()) {
-      winRound();
-    }
+    totalKills++;
+
+    checkRoundComplete();
   }
   placeBullet(bulletHole, e);
 }
 
 function nextRoundCountDown() {
   // TODO
+  // Maybe - display summary for next round, how much faster, how many more enemies, how fast they move etc.
   // Create a 3 second timer to show a countdown to the next round based on the selected difficulty.
 }
 
 function winRound() {
   announce("Round " + gameRound + " is completed!");
   playSound("victory");
-  advanceToNextRound();
 }
 
 function advanceToNextRound() {
   gameRound++;
   resetGame();
+  stepUpDifficulty();
+  hideUiElements();
   updateUi();
+  updateSummary();
+  showGameModal();
+}
+
+function stepUpDifficulty() {
+  enemySpeed += 0.05;
+  waveCount += 1;
+  enemySpawnFrequency -= 100;
 }
 
 function killTarget(targetElement) {
@@ -260,7 +285,10 @@ function updateUi() {
   roundsFiredIndicator.textContent = "Rounds Fired: " + bulletsFired;
   killsScoredIndicator.textContent = "Kills: " + kills;
   hitpointsDiv.textContent = "Hitpoints: " + currentPlayerHitpoints;
-  gameRoundDiv.textContent = "Round: " + gameRound;
+  gameRoundDiv.forEach((div) => {
+    div.textContent = "Round: " + gameRound;
+  });
+  totalKillsScoredIndicator.textContent = "Total Kills: " + totalKills;
 }
 
 /**
@@ -328,17 +356,16 @@ function loadWeapon(rounds = maxPlayerAmmo) {
 // }
 // Move Target
 function moveEnemy(el) {
-  let enemyStat = getEnemyStats();
   let pos = 1;
   let interval = setInterval(() => {
     if (pos < 900) {
-      pos++;
+      pos += enemySpeed;
     } else {
       window.clearInterval(interval);
       damagePlayer();
     }
     el.style.top = pos + "px";
-  }, enemyStat.speed);
+  }, 17 - enemySpeed / 10);
   el.dataset.interval = interval; // save the interval number so we can cancel later
 }
 
@@ -347,20 +374,31 @@ function playerIsOutOfHp() {
 }
 
 function damagePlayer() {
+  enemyBrokenThrough++;
   announce("A enemy has broken through!");
   currentPlayerHitpoints -= playerDamageTaken;
-  console.log("taking " + playerDamageTaken + " damage!");
+  console.log("Taking " + playerDamageTaken + " damage!");
 
   if (playerIsOutOfHp()) {
     currentPlayerHitpoints = 0;
     defeat();
   }
 
+  checkRoundComplete();
   updateUi();
 }
 
+function checkRoundComplete() {
+  if (isRoundCompleted()) {
+    winRound();
+    setTimeout(() => {
+      advanceToNextRound();
+    }, 1500);
+  }
+}
+
 function defeat() {
-  announce("You have died!");
+  announce("You have been overrun!");
   resetGame();
   currentPlayerAmmo = 0;
   playerDefeated = true;
@@ -395,6 +433,8 @@ function resetMag() {
 
 function resetGame() {
   enemyCount = 0;
+  enemyBrokenThrough = 0;
+  kills = 0;
   reloading = false;
   currentPlayerAmmo = maxPlayerAmmo;
   loadWeapon();
@@ -505,6 +545,8 @@ function createAndSpawnEnemy() {
 }
 
 function startGame() {
+  setEnemyStats();
+  hideGameModal();
   initializeStartValues();
   showUiElements();
   logStartGame();
@@ -512,99 +554,123 @@ function startGame() {
 }
 
 function initializeStartValues() {
-  currentPlayerHitpoints = maxPlayerHitpoints;
   playerDefeated = false;
+  updateSummary();
   updateUi();
+}
+function updateSummary() {
+  summarySpeed.textContent = "Speed: " + enemySpeed;
+  summarySpawnRate.textContent = "Spawnrate: " + enemySpawnFrequency + "ms";
+  summaryEnemyCount.textContent = "Count: " + waveCount;
+}
+
+function hideGameModal() {
+  if (introText) {
+    console.log("got intro");
+    introText.remove();
+  }
+  modal.style.display = "none";
+}
+
+function showGameModal() {
+  modal.style.display = "block";
 }
 
 function logStartGame() {
-  let enemyStat = getEnemyStats();
-  console.log("Starting game: ", { ...enemyStat });
+  console.log("Starting game: ", {
+    enemySpeed,
+    enemySpawnFrequency,
+    waveCount,
+  });
 }
 
 function hideUiElements() {
+  battlefield.classList.add("no-interact");
   playerCover.style.display = "none";
-  player.style.display = "none";
   magazine.style.display = "none";
-  gameRoundDiv.style.display = "none";
+  // gameRoundDiv.forEach((div) => {
+  //   div.style.display = "none";
+  // });
+  player.classList.add("invisible");
 }
 
 function showUiElements() {
+  battlefield.classList.remove("no-interact");
   playerCover.style.display = "block";
-  player.style.display = "block";
   magazine.style.display = "block";
-  gameRoundDiv.style.display = "inline-block";
+  gameRoundDiv.forEach((div) => {
+    div.style.display = "inline-block";
+  });
+  player.classList.remove("invisible");
 }
 
 function startEnemeyWave() {
-  let waveProperties = getEnemyStats();
+  setEnemyStats();
+
   let i = 0;
   gameInterval = setInterval(() => {
-    if (i < waveProperties.count) {
+    if (i < waveCount) {
       i++;
       createAndSpawnEnemy();
     } else {
       clearInterval(gameInterval);
     }
-  }, waveProperties.spawnRate);
+  }, enemySpawnFrequency);
 }
 
 function isRoundCompleted() {
-  let waveProperties = getEnemyStats();
-  return kills === waveProperties.count;
+  return kills + enemyBrokenThrough === waveCount;
 }
 
 function resetRound() {
   rounds = 0;
 }
 
-function getEnemyStats() {
-  let speed, count, spawnRate;
-
+function setEnemyStats() {
   switch (difficultyLevel) {
     case "teasy":
-      speed = 20;
-      spawnRate = 2400;
-      playerDamageTaken = 8;
-      count = 2;
+      enemySpeed = 1;
+      waveCount = 20;
+      enemySpawnFrequency = 2400;
+      playerDamageTaken = 5;
+      pointsEarned = 10;
       break;
     case "easy":
-      speed = 18;
-      spawnRate = 2000;
-      playerDamageTaken = 10;
-      count = 30;
+      enemySpeed = 1.05;
+      waveCount = 22;
+      enemySpawnFrequency = 2300;
+      playerDamageTaken = 8;
+      pointsEarned = 12;
       break;
     case "medium":
-      speed = 16;
-      spawnRate = 1600;
-      playerDamageTaken = 15;
-      count = 45;
+      enemySpeed = 1.1;
+      waveCount = 28;
+      enemySpawnFrequency = 2100;
+      playerDamageTaken = 10;
+      pointsEarned = 14;
       break;
     case "hard":
-      speed = 12;
-      spawnRate = 1400;
-      playerDamageTaken = 18;
-      count = 55;
+      enemySpeed = 1.15;
+      waveCount = 34;
+      enemySpawnFrequency = 1900;
+      playerDamageTaken = 12;
+      pointsEarned = 16;
       break;
     case "hardcore":
-      speed = 8;
-      spawnRate = 1200;
-      playerDamageTaken = 25;
-      count = 65;
+      enemySpeed = 1.2;
+      waveCount = 40;
+      enemySpawnFrequency = 1500;
+      playerDamageTaken = 14;
+      pointsEarned = 18;
       break;
     case "impossible":
-      speed = 4;
-      spawnRate = 900;
-      playerDamageTaken = 30;
-      count = 100;
+      enemySpeed = 1.25;
+      waveCount = 48;
+      enemySpawnFrequency = 1000;
+      playerDamageTaken = 16;
+      pointsEarned = 22;
       break;
   }
-
-  return {
-    speed,
-    count,
-    spawnRate,
-  };
 }
 
 /**
@@ -669,21 +735,19 @@ clearBullets.addEventListener("click", () => {
 });
 
 start.addEventListener("click", () => {
-  let selectedDifficulty = difficultySelect.value;
-  let selectedMode = gameModeSelect.value;
+  //let selectedMode = gameModeSelect.value;
   resetGame();
-
-  startGame(selectedDifficulty, selectedMode);
+  startGame();
 });
 
 // Stop game
-stop.addEventListener("click", () => {
-  let endgame = confirm("Are you sure you want to end the game?");
+// stop.addEventListener("click", () => {
+//   let endgame = confirm("Are you sure you want to end the game?");
 
-  if (endgame) {
-    resetGame();
-  }
-});
+//   if (endgame) {
+//     resetGame();
+//   }
+// });
 
 // Handle some key binds
 document.addEventListener("keydown", function (event) {
@@ -698,13 +762,18 @@ document.addEventListener("keydown", function (event) {
 // Set game properties
 difficultySelect.addEventListener("change", (e) => {
   difficultyLevel = e.target.value;
+  setEnemyStats();
+  setTimeout(() => {
+    updateSummary();
+  });
 });
 
-gameModeSelect.addEventListener("change", (e) => {
-  gameMode = e.target.value;
-});
+// gameModeSelect.addEventListener("change", (e) => {
+//   gameMode = e.target.value;
+// });
 
 function init() {
+  updateSummary();
   loadWeapon(maxPlayerAmmo);
 }
 
