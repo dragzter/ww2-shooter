@@ -122,7 +122,7 @@ window.onload = () => {
   let victorySound = new Audio("assets/victory.wav");
   let introMusic = new Audio("assets/intro.mp3");
   introMusic.autoplay = true;
-  introMusic.volume = 0.1;
+  introMusic.volume = 0.3;
   battleSound.loop = true;
   battleSound.volume = 0.1;
 
