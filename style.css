@@ -185,6 +185,12 @@ button:hover {
   background: #ee2602;
   color: #fff;
 }
+.info-text {
+  margin: 10px 0;
+}
+em {
+  color: #fff;
+}
 .target-outer-ring {
   width: 110px;
   height: 110px;
