@@ -26,25 +26,27 @@
       <div id="gameModal" class="animate__animated animate__zoomIn">
         <div class="modal-body">
           <div id="intro">
-            <h1>Welcome to Lone Rifleman.</h1>
+            <h1>You are the Lone Rifleman.</h1>
             <hr />
             <p>
               You are the last living member of your Rifle company defending a
-              medical convoy. Your last order was to hold off the German attack
-              at any cost. Do not let the enemy pass or you will be overrun and
-              the men being evacuated will be killed. The enemy waves will be
-              progressively stronger, arm yourself well. <br /><br />Much
+              medical convoy. Your orders are to hold off the German attack at
+              any cost. Do not let the enemy pass or you will be overrun and the
+              men being evacuated will surely perish. The enemy is determined to
+              fight to the bitter end.
+              <br /><br />Every time you repel a wave of infantry, they are sure
+              to return with greater ferocity and numbers. <br /><br />Much
               depends on your accuracy!
             </p>
 
-            <p>Select Difficulty and press "Start"</p>
+            <p>Select Difficulty and press "Start" to begin Round 1</p>
+            <label for="game-difficulty">Difficulty</label>
             <select name="difficulty-select" id="game-difficulty">
               <option selected value="teasy">Too Easy</option>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>
-              <option value="hardcore">Hardcore</option>
-              <option value="impossible">Impossible</option>
+              <option value="epic">Epic</option>
             </select>
             <hr />
           </div>
@@ -52,12 +54,25 @@
           <div class="round-menu">
             <h3><span class="round" id="modalRound">Round: 1</span></h3>
             <div id="roundSummary">
-              <h3>Enemey Stats</h3>
-              <p id="e-speed"></p>
-              <p id="e-spawnrate"></p>
-              <p id="e-count"></p>
+              <p id="opponent-name"></p>
+              <h3>Expected Enemy Strength</h3>
+              <p class="summary-item" id="e-speed"></p>
+              <p class="summary-item" id="e-spawnrate"></p>
+              <p class="summary-item" id="e-count"></p>
             </div>
             <button id="start"><i class="fas fa-play"></i> Start</button>
+          </div>
+
+          <div id="defeat-content">
+            <h1>You have been overrun.</h1>
+            <p>
+              The enemy has broken through, you have been captured. Undoubtedly,
+              your comrades in arms have been captured or killed. This is a dark
+              day for the Allies.
+            </p>
+            <button id="restart">
+              <i class="fas fa-play"></i> Start New Game
+            </button>
           </div>
         </div>
       </div>
