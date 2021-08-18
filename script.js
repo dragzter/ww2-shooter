@@ -110,7 +110,9 @@ window.onload = () => {
 
   // SOUNDS
   let rifle1 = new Audio("assets/gun-gunshot-01.wav");
+  let battleSound = new Audio("assets/battle.mp3");
   let garand = new Audio("assets/m1garand.wav");
+  let enfield = new Audio("assets/leeenfield.wav");
   let whack = new Audio("assets/whack.wav");
   let thud = new Audio("assets/woodthud.wav");
   let reloadSound = new Audio("assets/rifle-reload.wav");
@@ -121,18 +123,23 @@ window.onload = () => {
   let introMusic = new Audio("assets/intro.mp3");
   introMusic.autoplay = true;
   introMusic.volume = 0.1;
+  battleSound.loop = true;
+  battleSound.volume = 0.1;
+
+  let playerWeapon = enfield;
 
   // Enemy troopers
   let enemySelection = [
-    "assets/german1.png",
-    "assets/german3.png",
-    "assets/german4.png",
-    "assets/german4.png",
-    "assets/german6.png",
-    "assets/german7.png",
-    "assets/german8.png",
-    "assets/german9.png",
-    "assets/german10.png",
+    "assets/german1-green.png",
+    "assets/german3-green.png",
+    "assets/german4-gray.png",
+    "assets/german6-gray.png",
+    "assets/german7-gray.png",
+    "assets/german7-gray.png",
+    "assets/german8-gray.png",
+    "assets/german9-green.png",
+    "assets/german10-green.png",
+    "assets/german11-green.png",
   ];
 
   let endOfRoundBg = [
@@ -222,9 +229,9 @@ window.onload = () => {
   function playSound(sound) {
     switch (sound) {
       case "garand":
-        garand.pause();
-        garand.currentTime = 0.02;
-        garand.play();
+        playerWeapon.pause();
+        playerWeapon.currentTime = 0.02;
+        playerWeapon.play();
         break;
       case "hit":
         thud.pause();
@@ -297,6 +304,7 @@ window.onload = () => {
   }
 
   function winRound() {
+    stopBattleMusic();
     announce("Round " + gameRound + " is completed!");
     playSound("victory");
   }
@@ -338,10 +346,11 @@ window.onload = () => {
   function killTarget(targetElement) {
     // Get some data
     let hitPosition = targetElement.getBoundingClientRect();
+    let camoColor = targetElement.querySelector("img").dataset.camo;
     let targetInterval = targetElement.dataset.interval;
 
     // Create a dead body to place
-    let casualty = makeCasualty();
+    let casualty = makeCasualty(camoColor);
     battlefield.appendChild(casualty);
     //playSound("deathmoan");
 
@@ -571,14 +580,21 @@ window.onload = () => {
   function makeEnemy() {
     let choice = randomInt(enemySelection.length);
     let trooper = document.createElement("img");
+    let camoColor =
+      enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
     trooper.src = enemySelection[choice];
+    trooper.dataset.camo = camoColor;
     return generateItem(trooper, "trooper");
   }
 
   // Create a casualty
-  function makeCasualty() {
+  function makeCasualty(camoColor) {
     let casualty = document.createElement("img");
-    casualty.src = "assets/casualty-green.png";
+    if (camoColor === "gray") {
+      casualty.src = "assets/casualty-gray.png";
+    } else {
+      casualty.src = "assets/casualty-green.png";
+    }
     return generateItem(casualty, "casualty");
   }
 
@@ -617,7 +633,18 @@ window.onload = () => {
     moveEnemy(target);
   }
 
+  function startBattleMusic() {
+    battleSound.currentTime = 0;
+    battleSound.play();
+  }
+
+  function stopBattleMusic() {
+    battleSound.pause();
+    battleSound.currentTime = 0;
+  }
+
   function startGame() {
+    startBattleMusic();
     setEnemyStats();
     hideDefeatUi();
     stopIntroMusic();
@@ -759,7 +786,7 @@ window.onload = () => {
         enemySpeed = 1;
         waveCount = 18;
         enemySpawnFrequency = 2400;
-        playerDamageTaken = 100;
+        playerDamageTaken = 5;
         pointsEarned = 10;
         break;
       case "easy":
@@ -787,7 +814,7 @@ window.onload = () => {
         enemySpeed = 1.4;
         waveCount = 40;
         enemySpawnFrequency = 1500;
-        playerDamageTaken = 14;
+        playerDamageTaken = 16;
         pointsEarned = 18;
         break;
     }
