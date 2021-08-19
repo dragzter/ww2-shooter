@@ -1,8 +1,11 @@
 window.onload = () => {
+  // Instantiate upgrade class
+  const _ups = window.upgrade;
+  const _helpers = window.helpers;
+
   // Constants
   const VALID_TARGETS = ["battlefield", "target", "bullet", "enemy", "trooper"];
   document.documentElement.style.setProperty("--animate-duration", ".5s");
-
   // DOM
   let pointDiv = document.querySelector("#points");
   let crosshair = document.querySelector("#crosshair");
@@ -54,33 +57,8 @@ window.onload = () => {
   let playerDamageTaken = 5;
   let pointsEarned = 10;
 
-  let maxEnemyValues = {
-    teasy: {
-      speed: 2,
-      spawnRate: 1800,
-      count: 70,
-    },
-    easy: {
-      speed: 3,
-      spawnRate: 1400,
-      count: 90,
-    },
-    medium: {
-      speed: 4,
-      spawnRate: 1200,
-      count: 110,
-    },
-    hard: {
-      speed: 5,
-      spawnRate: 1000,
-      count: 130,
-    },
-    epic: {
-      speed: 6,
-      spawnRate: 800,
-      count: 170,
-    },
-  };
+  // Get difficulty max difficulty ramp up values
+  let maxEnemyValues = _helpers.difficultyBounds();
 
   // Trackers
   let points = 0;
@@ -109,18 +87,18 @@ window.onload = () => {
   let moveTargetInterval;
 
   // SOUNDS
-  let rifle1 = new Audio("assets/gun-gunshot-01.wav");
-  let battleSound = new Audio("assets/battle.mp3");
-  let garand = new Audio("assets/m1garand.wav");
-  let enfield = new Audio("assets/leeenfield.wav");
-  let whack = new Audio("assets/whack.wav");
-  let thud = new Audio("assets/woodthud.wav");
-  let reloadSound = new Audio("assets/rifle-reload.wav");
-  let empty = new Audio("assets/gunempty.wav");
-  let deathmoan = new Audio("assets/dying-sound.wav");
-  let defeatedSound = new Audio("assets/defeat.wav");
-  let victorySound = new Audio("assets/victory.wav");
-  let introMusic = new Audio("assets/intro.mp3");
+  let rifle1 = window.rifle1;
+  let battleSound = window.battleSound;
+  let garand = window.garand;
+  let enfield = window.enfield;
+  let whack = window.whack;
+  let thud = window.thud;
+  let reloadSound = window.reloadSound;
+  let empty = window.empty;
+  let deathmoan = window.deathmoan;
+  let defeatedSound = window.defeatedSound;
+  let victorySound = window.victorySound;
+  let introMusic = window.introMusic;
   introMusic.autoplay = true;
   introMusic.volume = 0.3;
   battleSound.loop = true;
@@ -128,65 +106,11 @@ window.onload = () => {
 
   let playerWeapon = enfield;
 
-  // Enemy troopers
-  let enemySelection = [
-    "assets/german1-green.png",
-    "assets/german3-green.png",
-    "assets/german4-gray.png",
-    "assets/german6-gray.png",
-    "assets/german7-gray.png",
-    "assets/german7-gray.png",
-    "assets/german8-gray.png",
-    "assets/german9-green.png",
-    "assets/german10-green.png",
-    "assets/german11-green.png",
-  ];
-
-  let endOfRoundBg = [
-    "assets/endofround2.jpg",
-    "assets/endofround3.png",
-    "assets/endofround4.jpg",
-    "assets/endofround5.jpg",
-    "assets/endofround6.jpg",
-    "assets/endofround7.jpg",
-    "assets/endofround8.jpg",
-    "assets/endofround9.jpg",
-    "assets/endofround10.jpg",
-    "assets/endofround11.jpg",
-    "assets/endofround12.jpg",
-    "assets/endofround13.jpg",
-    "assets/endofround14.jpg",
-    "assets/endofround15.jpg",
-    "assets/endofround16.jpg",
-    "assets/endofround17.jpg",
-    "assets/endofround18.jpg",
-    "assets/endofroundimg.jpg",
-  ];
-
-  let enemyDivisons = [
-    "Panzer Division Müncheberg",
-    "12th Volksgrenadier Division",
-    "15th Panzergrenadier Division",
-    "22nd Volksgrenadier Division",
-    "36th Volksgrenadier Division",
-    "62nd Volksgrenadier Division",
-    "117th Jäger Division",
-    "183rd Volksgrenadier Division",
-    "538th Frontier Guard Division",
-    "104th Jäger Division",
-    "4th Mountain Division",
-    "6th Mountain Division",
-    "233rd Panzergrenadier Division",
-    "156th Field Replacement Division",
-    "100th Light Infantry Division",
-    "20th Motorized Infantry Division",
-  ];
-
-  let defeatBg = [
-    "assets/defeat1.jpg",
-    "assets/defeat2.jpg",
-    "assets/defeat3.jpg",
-  ];
+  // Assets
+  let enemySelection = window.enemySelection;
+  let endOfRoundBg = window.endOfRoundBg;
+  let enemyDivisons = window.enemyDivisons;
+  let defeatBg = window.defeatBg;
 
   /**
    * -------------
@@ -197,32 +121,6 @@ window.onload = () => {
   function getCenter(element) {
     const { left, top, width, height } = element.getBoundingClientRect();
     return { x: left + width / 2, y: top + height / 2 };
-  }
-
-  function uuid() {
-    let s4 = () => {
-      return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-    };
-    return (
-      s4() +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      s4() +
-      s4()
-    );
-  }
-
-  function randomInt(n) {
-    return Math.floor(Math.random() * n);
   }
 
   // PLay sound files
@@ -299,7 +197,7 @@ window.onload = () => {
   }
 
   function setEnemyName() {
-    let choice = randomInt(enemyDivisons.length);
+    let choice = _helpers.randomInt(enemyDivisons.length);
     enemyNameElement.innerHTML = `<i class="fas fa-compress"></i>  ${enemyDivisons[choice]}`;
   }
 
@@ -532,7 +430,7 @@ window.onload = () => {
    */
   function generateTarget() {
     // Practice targets
-    const id = uuid();
+    const id = _helpers.uuid();
     let fullTarget = document.createElement("div");
     let targetInnerRing = document.createElement("div");
     let targetBullsEye = document.createElement("div");
@@ -565,7 +463,7 @@ window.onload = () => {
    * @returns base - the composed html element.
    */
   function generateItem(object, identifier) {
-    const id = uuid();
+    const id = _helpers.uuid();
     let base = document.createElement("div");
     base.setAttribute.draggable = false;
     base.id = `base-${identifier}-${id}`;
@@ -578,7 +476,7 @@ window.onload = () => {
 
   // Generate enemy trooper
   function makeEnemy() {
-    let choice = randomInt(enemySelection.length);
+    let choice = _helpers.randomInt(enemySelection.length);
     let trooper = document.createElement("img");
     let camoColor =
       enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
@@ -615,7 +513,7 @@ window.onload = () => {
       "860px",
       "940px",
     ];
-    let choice = randomInt(zones.length);
+    let choice = _helpers.randomInt(zones.length);
     return {
       top: "0px",
       left: zones[choice],
@@ -709,7 +607,7 @@ window.onload = () => {
 
   function showGameModal() {
     let choiceLibrary = playerDefeated ? defeatBg : endOfRoundBg;
-    let choice = randomInt(choiceLibrary.length);
+    let choice = _helpers.randomInt(choiceLibrary.length);
     modal.querySelector("#gameModal").style.backgroundImage =
       "url(" + choiceLibrary[choice] + ")";
     modal.style.display = "block";
