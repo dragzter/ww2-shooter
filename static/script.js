@@ -1,11 +1,20 @@
-window.onload = () => {
-  // Instantiate upgrade class
-  const _ups = window.upgrade;
-  const _helpers = window.helpers;
+import {
+  roundBg,
+  enemyDivisionNames,
+  defeatBackgrounds,
+  enemySelectionLibrary,
+  sound,
+} from "./modules/assets.js";
+import Helpers from "./modules/helpers.js";
+import Upgrade from "./modules/upgrade.js";
 
-  // Constants
-  const VALID_TARGETS = ["battlefield", "target", "bullet", "enemy", "trooper"];
+window.onload = () => {
+  // Init Classes
+  const _ups = new Upgrade();
+  const _helpers = new Helpers();
+
   document.documentElement.style.setProperty("--animate-duration", ".5s");
+
   // DOM
   let pointDiv = document.querySelector("#points");
   let crosshair = document.querySelector("#crosshair");
@@ -87,35 +96,36 @@ window.onload = () => {
   let moveTargetInterval;
 
   // SOUNDS
-  let rifle1 = window.rifle1;
-  let battleSound = window.battleSound;
-  let garand = window.garand;
-  let enfield = window.enfield;
-  let whack = window.whack;
-  let thud = window.thud;
-  let reloadSound = window.reloadSound;
-  let empty = window.empty;
-  let deathmoan = window.deathmoan;
-  let defeatedSound = window.defeatedSound;
-  let victorySound = window.victorySound;
-  let introMusic = window.introMusic;
+  let rifle1 = sound.rifle1;
+  let battleSound = sound.battleSound;
+  let garand = sound.garand;
+  let enfield = sound.enfield;
+  let whack = sound.whack;
+  let thud = sound.thud;
+  let reloadSound = sound.reloadSound;
+  let empty = sound.empty;
+  let deathmoan = sound.deathmoan;
+  let defeatedSound = sound.defeatedSound;
+  let victorySound = sound.victorySound;
+  let introMusic = sound.introMusic;
   introMusic.autoplay = true;
   introMusic.volume = 0.3;
   battleSound.loop = true;
   battleSound.volume = 0.1;
 
   let playerWeapon = enfield;
+  const playerCenter = getCenter(player);
 
   // Assets
-  let enemySelection = window.enemySelection;
-  let endOfRoundBg = window.endOfRoundBg;
-  let enemyDivisons = window.enemyDivisons;
-  let defeatBg = window.defeatBg;
+  let enemySelection = enemySelectionLibrary;
+  let endOfRoundBg = roundBg;
+  let enemyDivision = enemyDivisionNames;
+  let defeatBg = defeatBackgrounds;
 
   /**
-   * -------------
-   *    HELPERS
-   * -------------
+   * [0]================[0]
+   *  |      HELPERS     |
+   * [0]================[0]
    */
 
   function getCenter(element) {
@@ -147,12 +157,6 @@ window.onload = () => {
         empty.volume = 0.6;
         empty.play();
         break;
-      case "deathmoan":
-        // deathmoan.currentTime = 0;
-        // deathmoan.volume = 0.5;
-        // deathmoan.playbackRate = 2;
-        // deathmoan.play();
-        break;
       case "defeat":
         defeatedSound.currentTime = 0;
         defeatedSound.volume = 0.8;
@@ -166,14 +170,11 @@ window.onload = () => {
     }
   }
 
-  const playerCenter = getCenter(player);
-  addEventListener("mousemove", (e) => {
-    const angle = Math.atan2(
-      e.clientY - playerCenter.y,
-      e.clientX - playerCenter.x
-    );
-    player.style.transform = `rotate(${angle + 1.5}rad)`;
-  });
+  /**
+   * [0]================[0]
+   *  |    GAME LOGIC    |
+   * [0]================[0]
+   */
 
   // Hit occured, create bullet hole and play sound
   function isAHit(target, e) {
@@ -196,17 +197,13 @@ window.onload = () => {
     placeBullet(bulletHole, e);
   }
 
-  function setEnemyName() {
-    let choice = _helpers.randomInt(enemyDivisons.length);
-    enemyNameElement.innerHTML = `<i class="fas fa-compress"></i>  ${enemyDivisons[choice]}`;
-  }
-
   function winRound() {
     stopBattleMusic();
     announce("Round " + gameRound + " is completed!");
     playSound("victory");
   }
 
+  // Take all the steps to start next round
   function advanceToNextRound() {
     gameRound++;
     resetGame();
@@ -241,6 +238,7 @@ window.onload = () => {
     }
   }
 
+  // When the target dies
   function killTarget(targetElement) {
     // Get some data
     let hitPosition = targetElement.getBoundingClientRect();
@@ -269,11 +267,249 @@ window.onload = () => {
     return currentPlayerAmmo >= 0;
   }
 
-  // What we hit is a valid target, or not
-  function isValidTarget(target) {
-    return VALID_TARGETS.some((validTarget) => {
-      return target.indexOf(validTarget) > -1;
+  // Move Target
+  function moveEnemy(el) {
+    let pos = 1;
+    let interval = setInterval(() => {
+      if (pos < 900) {
+        pos += enemySpeed;
+      } else {
+        window.clearInterval(interval);
+        damagePlayer();
+      }
+      el.style.top = pos + "px";
+    }, 15 - enemySpeed);
+    el.dataset.interval = interval; // save the interval number so we can cancel later
+  }
+
+  // Stop target movement
+  function stopTargetMove(id) {
+    window.clearInterval(moveTargetInterval);
+    targetIsMoving = false;
+    targetStoppedPosition = document.getElementById("target-1").offsetLeft;
+  }
+
+  function removeTargets() {
+    document.querySelectorAll(".trooper, .casualty").forEach((trooper) => {
+      clearInterval(trooper.dataset.interval);
+      trooper.remove();
     });
+  }
+
+  // Clear magazine
+  function resetMag() {
+    magazine.querySelectorAll("img").forEach((bullet) => {
+      bullet.remove();
+    });
+  }
+
+  function resetGame() {
+    enemyCount = 0;
+    enemyBrokenThrough = 0;
+    kills = 0;
+    reloading = false;
+    currentPlayerAmmo = maxPlayerAmmo;
+    loadWeapon();
+    clearBullets.click();
+    removeTargets();
+    clearInterval(gameInterval);
+  }
+
+  /**
+   * [0]================[0]
+   *  |     PRACTICE     |
+   * [0]================[0]
+   */
+
+  // Create a target to shoot at
+  // TODO - code up practice mode
+  function generateTarget() {
+    // Practice targets
+    const id = _helpers.uuid();
+    let fullTarget = document.createElement("div");
+    let targetInnerRing = document.createElement("div");
+    let targetBullsEye = document.createElement("div");
+
+    fullTarget.id = "target-o-" + id;
+    fullTarget.classList.add("target-outer-ring");
+
+    targetInnerRing.id = "target-i-" + id;
+    targetInnerRing.classList.add("target-inner-ring");
+
+    targetBullsEye.id = "target-b-" + id;
+    targetBullsEye.classList.add("target-bullseye");
+
+    fullTarget.appendChild(targetInnerRing);
+    targetInnerRing.appendChild(targetBullsEye);
+
+    return fullTarget;
+  }
+
+  /**
+   * [0]================[0]
+   *  |    GAME LOOP     |
+   * [0]================[0]
+   */
+
+  function startGame() {
+    startBattleMusic();
+    setEnemyStats();
+    hideDefeatUi();
+    stopIntroMusic();
+    hideGameModal();
+    initializeStartValues();
+    showUiElements();
+    logStartGame();
+    startEnemeyWave();
+  }
+
+  // Generate enemy trooper
+  function makeEnemy() {
+    let choice = _helpers.randomInt(enemySelection.length);
+    let trooper = document.createElement("img");
+    let camoColor =
+      enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
+    trooper.src = enemySelection[choice];
+    trooper.dataset.camo = camoColor;
+    return _helpers.generateItem(trooper, "trooper");
+  }
+
+  // Create a dead model when a target is killed
+  function makeCasualty(camoColor) {
+    let casualty = document.createElement("img");
+    if (camoColor === "gray") {
+      casualty.src = "assets/casualty-gray.png";
+    } else {
+      casualty.src = "assets/casualty-green.png";
+    }
+    return _helpers.generateItem(casualty, "casualty");
+  }
+
+  function createAndSpawnEnemy() {
+    enemyCount++;
+    let target = makeEnemy();
+    let targetPosition = _helpers.generateSpawnLocation();
+    battlefield.appendChild(target);
+    target.style.top = targetPosition.top;
+    target.style.left = targetPosition.left;
+    target.dataset.left = parseInt(targetPosition.left);
+    moveEnemy(target);
+  }
+
+  // Create bullet hole element and return it
+  function createBulletHole() {
+    let bulletHole = document.createElement("div");
+    bulletHole.classList.add(
+      "bullet-hole",
+      "animate__animated",
+      "animate__pulse"
+    );
+    bulletHole.id = "bullet-hole-" + bulletsFired;
+    return bulletHole;
+  }
+
+  // Load weapon
+  function loadWeapon(rounds = maxPlayerAmmo) {
+    resetMag();
+    for (let i = 0; i < rounds; i++) {
+      let img = document.createElement("img");
+      img.classList.add("rifle-round");
+      img.style.setProperty("--animate-duration", `.${i}1s`);
+      img.src = "assets/bullet.png";
+      magazine.appendChild(img);
+    }
+  }
+
+  function startBattleMusic() {
+    battleSound.currentTime = 0;
+    battleSound.play();
+  }
+
+  function stopBattleMusic() {
+    battleSound.pause();
+    battleSound.currentTime = 0;
+  }
+
+  function initializeStartValues() {
+    playerDefeated = false;
+    updateSummary();
+    updateUi();
+  }
+
+  // Check is the player is still alive
+  function playerIsOutOfHp() {
+    return currentPlayerHitpoints <= 0;
+  }
+
+  function damagePlayer() {
+    enemyBrokenThrough++;
+    announce("A enemy has broken through!");
+    currentPlayerHitpoints -= playerDamageTaken;
+    if (playerIsOutOfHp()) {
+      currentPlayerHitpoints = 0;
+      defeat();
+    }
+    checkRoundComplete();
+    updateUi();
+  }
+
+  function checkRoundComplete() {
+    if (isRoundCompleted()) {
+      winRound();
+      setTimeout(() => {
+        advanceToNextRound();
+      }, 1500);
+    }
+  }
+
+  // The player is dead
+  function defeat() {
+    announce("You have been overrun!");
+    resetGame();
+    currentPlayerAmmo = 0;
+    playerDefeated = true;
+    points = 0;
+    playSound("defeat");
+    hideUiElements();
+    showDefeatUi();
+    showGameModal();
+  }
+
+  function stopIntroMusic() {
+    if (!introMusic) {
+      return;
+    }
+    introMusic.pause();
+    introMusic.currentTime = 0;
+  }
+
+  function startIntroMusic() {
+    if (!introMusic) {
+      return;
+    }
+    introMusic.muted = false;
+    introMusic.currentTime = 0;
+    introMusic.play();
+  }
+
+  function logStartGame() {
+    console.log("Starting game: ", {
+      enemySpeed,
+      enemySpawnFrequency,
+      waveCount,
+    });
+  }
+
+  /**
+   * [0]================[0]
+   *  |        UI        |
+   * [0]================[0]
+   */
+
+  // Sets a random enemy name at the beginning of the game
+  function setEnemyName() {
+    let choice = _helpers.randomInt(enemyDivision.length);
+    enemyNameElement.innerHTML = `<i class="fas fa-compress"></i>  ${enemyDivision[choice]}`;
   }
 
   // Position bullet hole
@@ -310,270 +546,6 @@ window.onload = () => {
         uiMessage.style.visibility = "hidden";
       }, 4000);
     });
-  }
-
-  // Create bullet hole element and return it
-  function createBulletHole() {
-    let bulletHole = document.createElement("div");
-    bulletHole.classList.add(
-      "bullet-hole",
-      "animate__animated",
-      "animate__pulse"
-    );
-    bulletHole.id = "bullet-hole-" + bulletsFired;
-    return bulletHole;
-  }
-
-  // Load weapon
-  function loadWeapon(rounds = maxPlayerAmmo) {
-    resetMag();
-    for (let i = 0; i < rounds; i++) {
-      let img = document.createElement("img");
-      img.classList.add("rifle-round");
-      img.style.setProperty("--animate-duration", `.${i}1s`);
-      img.src = "assets/bullet.png";
-      magazine.appendChild(img);
-    }
-  }
-
-  // Move Target
-  function moveEnemy(el) {
-    let pos = 1;
-    let interval = setInterval(() => {
-      if (pos < 900) {
-        pos += enemySpeed;
-      } else {
-        window.clearInterval(interval);
-        damagePlayer();
-      }
-      el.style.top = pos + "px";
-    }, 15 - enemySpeed);
-    el.dataset.interval = interval; // save the interval number so we can cancel later
-  }
-
-  function playerIsOutOfHp() {
-    return currentPlayerHitpoints <= 0;
-  }
-
-  function damagePlayer() {
-    enemyBrokenThrough++;
-    announce("A enemy has broken through!");
-    currentPlayerHitpoints -= playerDamageTaken;
-    if (playerIsOutOfHp()) {
-      currentPlayerHitpoints = 0;
-      defeat();
-    }
-    checkRoundComplete();
-    updateUi();
-  }
-
-  function checkRoundComplete() {
-    if (isRoundCompleted()) {
-      winRound();
-      setTimeout(() => {
-        advanceToNextRound();
-      }, 1500);
-    }
-  }
-
-  function defeat() {
-    announce("You have been overrun!");
-    resetGame();
-    currentPlayerAmmo = 0;
-    playerDefeated = true;
-    points = 0;
-    playSound("defeat");
-    hideUiElements();
-    showDefeatUi();
-    showGameModal();
-  }
-
-  // Stop target movement
-  function stopTargetMove(id) {
-    window.clearInterval(moveTargetInterval);
-    targetIsMoving = false;
-    targetStoppedPosition = document.getElementById("target-1").offsetLeft;
-  }
-
-  function removeTargets() {
-    document.querySelectorAll(".trooper, .casualty").forEach((trooper) => {
-      clearInterval(trooper.dataset.interval);
-      trooper.remove();
-    });
-  }
-
-  function gameStatus() {}
-
-  // Clear magazine
-  function resetMag() {
-    magazine.querySelectorAll("img").forEach((bullet) => {
-      bullet.remove();
-    });
-  }
-
-  function resetGame() {
-    enemyCount = 0;
-    enemyBrokenThrough = 0;
-    kills = 0;
-    reloading = false;
-    currentPlayerAmmo = maxPlayerAmmo;
-    loadWeapon();
-    clearBullets.click();
-    removeTargets();
-    clearInterval(gameInterval);
-  }
-
-  /**
-   * ====================
-   *      PRACTICE
-   * ====================
-   */
-  function generateTarget() {
-    // Practice targets
-    const id = _helpers.uuid();
-    let fullTarget = document.createElement("div");
-    let targetInnerRing = document.createElement("div");
-    let targetBullsEye = document.createElement("div");
-
-    fullTarget.id = "target-o-" + id;
-    fullTarget.classList.add("target-outer-ring");
-
-    targetInnerRing.id = "target-i-" + id;
-    targetInnerRing.classList.add("target-inner-ring");
-
-    targetBullsEye.id = "target-b-" + id;
-    targetBullsEye.classList.add("target-bullseye");
-
-    fullTarget.appendChild(targetInnerRing);
-    targetInnerRing.appendChild(targetBullsEye);
-
-    return fullTarget;
-  }
-
-  /**
-   * ====================
-   *      SURVIVAL
-   * ====================
-   */
-
-  /**
-   *
-   * @param {node} object - The node being appended to the base
-   * @param {string} identifier - string identifier
-   * @returns base - the composed html element.
-   */
-  function generateItem(object, identifier) {
-    const id = _helpers.uuid();
-    let base = document.createElement("div");
-    base.setAttribute.draggable = false;
-    base.id = `base-${identifier}-${id}`;
-    base.classList.add("unselectable", identifier);
-
-    object.id = `${identifier}-${id}`;
-    base.appendChild(object);
-    return base;
-  }
-
-  // Generate enemy trooper
-  function makeEnemy() {
-    let choice = _helpers.randomInt(enemySelection.length);
-    let trooper = document.createElement("img");
-    let camoColor =
-      enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
-    trooper.src = enemySelection[choice];
-    trooper.dataset.camo = camoColor;
-    return generateItem(trooper, "trooper");
-  }
-
-  // Create a casualty
-  function makeCasualty(camoColor) {
-    let casualty = document.createElement("img");
-    if (camoColor === "gray") {
-      casualty.src = "assets/casualty-gray.png";
-    } else {
-      casualty.src = "assets/casualty-green.png";
-    }
-    return generateItem(casualty, "casualty");
-  }
-
-  // Randown spawn location for enemy
-  function generateSpawnLocation() {
-    let zones = [
-      "0",
-      "80px",
-      "160px",
-      "240px",
-      "320px",
-      "380px",
-      "460px",
-      "540px",
-      "620px",
-      "700px",
-      "780px",
-      "860px",
-      "940px",
-    ];
-    let choice = _helpers.randomInt(zones.length);
-    return {
-      top: "0px",
-      left: zones[choice],
-    };
-  }
-
-  function createAndSpawnEnemy() {
-    enemyCount++;
-    let target = makeEnemy();
-    let targetPosition = generateSpawnLocation();
-    battlefield.appendChild(target);
-    target.style.top = targetPosition.top;
-    target.style.left = targetPosition.left;
-    target.dataset.left = parseInt(targetPosition.left);
-    moveEnemy(target);
-  }
-
-  function startBattleMusic() {
-    battleSound.currentTime = 0;
-    battleSound.play();
-  }
-
-  function stopBattleMusic() {
-    battleSound.pause();
-    battleSound.currentTime = 0;
-  }
-
-  function startGame() {
-    startBattleMusic();
-    setEnemyStats();
-    hideDefeatUi();
-    stopIntroMusic();
-    hideGameModal();
-    initializeStartValues();
-    showUiElements();
-    logStartGame();
-    startEnemeyWave();
-  }
-
-  function initializeStartValues() {
-    playerDefeated = false;
-    updateSummary();
-    updateUi();
-  }
-  function stopIntroMusic() {
-    if (!introMusic) {
-      return;
-    }
-    introMusic.pause();
-    introMusic.currentTime = 0;
-  }
-
-  function startIntroMusic() {
-    if (!introMusic) {
-      return;
-    }
-
-    introMusic.muted = false;
-    introMusic.currentTime = 0;
-    introMusic.play();
   }
 
   function updateSummary() {
@@ -613,14 +585,6 @@ window.onload = () => {
     modal.style.display = "block";
   }
 
-  function logStartGame() {
-    console.log("Starting game: ", {
-      enemySpeed,
-      enemySpawnFrequency,
-      waveCount,
-    });
-  }
-
   function hideUiElements() {
     battlefield.classList.add("no-interact");
     playerCover.style.display = "none";
@@ -654,6 +618,7 @@ window.onload = () => {
     modal.querySelector("#defeat-content").style.display = "none";
   }
 
+  // Begin spawning enemy targets when a round begins
   function startEnemeyWave() {
     let i = 0;
     gameInterval = setInterval(() => {
@@ -717,12 +682,27 @@ window.onload = () => {
         break;
     }
   }
+  /**
+   * [0]================[0]
+   *  |     UPGRADES     |
+   * [0]================[0]
+   */
+  // TODO -- Build an upgrade system where the player can purchase upgrade with points earned
 
   /**
-   * *************
-   *    EVENTS   *
-   * *************
+   * [0]================[0]
+   *  |      EVENTS      |
+   * [0]================[0]
    */
+
+  addEventListener("mousemove", (e) => {
+    const angle = Math.atan2(
+      e.clientY - playerCenter.y,
+      e.clientX - playerCenter.x
+    );
+    player.style.transform = `rotate(${angle + 1.5}rad)`;
+  });
+
   // Make bullet holes - SHOOT
   document.addEventListener("click", (e) => {
     if (justFired || playerDefeated) {
@@ -730,7 +710,7 @@ window.onload = () => {
     }
     justFired = true;
     let id = e.target.id;
-    if (isValidTarget(id) && !reloading) {
+    if (_helpers.isValidTarget(id) && !reloading) {
       currentPlayerAmmo--;
 
       // Handle hits
@@ -785,6 +765,7 @@ window.onload = () => {
   });
 
   restartGameButton.addEventListener("click", () => {
+    // TODO - go back to main menu instead - not just restart
     resetGame();
     startGame();
   });
@@ -799,6 +780,7 @@ window.onload = () => {
     }
   });
 
+  // Have to interacting with the app to play intro music
   document.addEventListener("click", () => {
     if (!introHasPlayed) {
       introHasPlayed = true;
@@ -816,6 +798,11 @@ window.onload = () => {
     });
   });
 
+  /**
+   * [0]==========================================================[0]
+   */
+
+  // Initialize Game
   function init() {
     setEnemyName();
     updateSummary();

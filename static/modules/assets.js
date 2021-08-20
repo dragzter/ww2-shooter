@@ -1,5 +1,5 @@
 // Enemy troopers
-window.enemySelection = [
+const enemySelectionLibrary = [
   "assets/german1-green.png",
   "assets/german3-green.png",
   "assets/german4-gray.png",
@@ -12,7 +12,7 @@ window.enemySelection = [
   "assets/german11-green.png",
 ];
 
-window.endOfRoundBg = [
+const roundBg = [
   "assets/endofround2.jpg",
   "assets/endofround3.png",
   "assets/endofround4.jpg",
@@ -33,7 +33,7 @@ window.endOfRoundBg = [
   "assets/endofroundimg.jpg",
 ];
 
-window.enemyDivisons = [
+const enemyDivisionNames = [
   "Panzer Division Müncheberg",
   "12th Volksgrenadier Division",
   "15th Panzergrenadier Division",
@@ -52,21 +52,31 @@ window.enemyDivisons = [
   "20th Motorized Infantry Division",
 ];
 
-window.defeatBg = [
+const defeatBackgrounds = [
   "assets/defeat1.jpg",
   "assets/defeat2.jpg",
   "assets/defeat3.jpg",
 ];
 
-window.rifle1 = new Audio("assets/gun-gunshot-01.wav");
-window.battleSound = new Audio("assets/battle.mp3");
-window.garand = new Audio("assets/m1garand.wav");
-window.enfield = new Audio("assets/leeenfield.wav");
-window.whack = new Audio("assets/whack.wav");
-window.thud = new Audio("assets/woodthud.wav");
-window.reloadSound = new Audio("assets/rifle-reload.wav");
-window.empty = new Audio("assets/gunempty.wav");
-window.deathmoan = new Audio("assets/dying-sound.wav");
-window.defeatedSound = new Audio("assets/defeat.wav");
-window.victorySound = new Audio("assets/victory.wav");
-window.introMusic = new Audio("assets/intro.mp3");
+const sound = {
+  rifle1: new Audio("assets/gun-gunshot-01.wav"),
+  battleSound: new Audio("assets/battle.mp3"),
+  garand: new Audio("assets/m1garand.wav"),
+  enfield: new Audio("assets/leeenfield.wav"),
+  whack: new Audio("assets/whack.wav"),
+  thud: new Audio("assets/woodthud.wav"),
+  reloadSound: new Audio("assets/rifle-reload.wav"),
+  empty: new Audio("assets/gunempty.wav"),
+  deathmoan: new Audio("assets/dying-sound.wav"),
+  defeatedSound: new Audio("assets/defeat.wav"),
+  victorySound: new Audio("assets/victory.wav"),
+  introMusic: new Audio("assets/intro.mp3"),
+};
+
+export {
+  roundBg,
+  defeatBackgrounds,
+  enemyDivisionNames,
+  enemySelectionLibrary,
+  sound,
+};
