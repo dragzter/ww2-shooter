@@ -354,13 +354,32 @@ window.onload = () => {
   function startGame() {
     startBattleMusic();
     setEnemyStats();
-    hideDefeatUi();
     stopIntroMusic();
+    hideDefeatUi();
     hideGameModal();
     initializeStartValues();
     showUiElements();
     logStartGame();
     startEnemeyWave();
+  }
+
+  function debugMode() {
+    setEnemyStats();
+    stopIntroMusic();
+    hideDefeatUi();
+    hideGameModal();
+    initializeStartValues();
+    showUiElements();
+  }
+
+  function isDebug() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const debug = urlParams.get("debug");
+    if (Boolean(debug)) {
+      return true;
+    }
+    return false;
   }
 
   // Generate enemy trooper
@@ -497,6 +516,7 @@ window.onload = () => {
       enemySpeed,
       enemySpawnFrequency,
       waveCount,
+      gameRound,
     });
   }
 
@@ -781,12 +801,14 @@ window.onload = () => {
   });
 
   // Have to interacting with the app to play intro music
-  document.addEventListener("click", () => {
-    if (!introHasPlayed) {
-      introHasPlayed = true;
-      startIntroMusic();
-    }
-  });
+  function canPlayIntro() {
+    document.addEventListener("click", () => {
+      if (!introHasPlayed) {
+        introHasPlayed = true;
+        startIntroMusic();
+      }
+    });
+  }
 
   // Set game properties
   difficultySelect.addEventListener("change", (e) => {
@@ -804,9 +826,14 @@ window.onload = () => {
 
   // Initialize Game
   function init() {
-    setEnemyName();
-    updateSummary();
-    loadWeapon(maxPlayerAmmo);
+    if (isDebug()) {
+      debugMode();
+    } else {
+      setEnemyName();
+      canPlayIntro();
+      updateSummary();
+      loadWeapon(maxPlayerAmmo);
+    }
   }
 
   init();

@@ -15,6 +15,10 @@ body {
 .invisible {
   visibility: hidden;
 }
+
+#shop-modal {
+  display: none;
+}
 /* #crosshair {
   position: absolute;
   pointer-events: none;
