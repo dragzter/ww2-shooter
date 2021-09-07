@@ -22,8 +22,44 @@
     <link rel="stylesheet" href="css/style.css" type="text/css" />
   </head>
   <body>
+    <div id="shop-modal">
+      <div id="shop">
+        <h1>Shop Upgrades</h1>
+        <div id="shop-container">
+          <div class="shop-item card">
+            <div class="c-header firespeed-up">
+              <i class="fas fa-redo"></i>
+            </div>
+            <div class="c-body">
+              <p>-20ms Shooting Speed</p>
+              <p class="cost"><i class="fas fa-coins"></i> 220</p>
+              <p class="level"><i class="far fa-plus-square"></i> Lvl 1</p>
+            </div>
+          </div>
+          <div class="shop-item card">
+            <div class="c-header reload-up">
+              <i class="fas fa-stopwatch"></i>
+            </div>
+            <div class="c-body">
+              <p>-200ms Realod Speed</p>
+              <p class="cost"><i class="fas fa-coins"></i> 280</p>
+              <p class="level"><i class="far fa-plus-square"></i> Lvl 1</p>
+            </div>
+          </div>
+          <div class="shop-item card">
+            <div class="c-header capacity-up">
+              <i class="fas fa-folder-plus"></i>
+            </div>
+            <div class="c-body">
+              <p>+2 magazine capacity</p>
+              <p class="cost"><i class="fas fa-coins"></i> 320</p>
+              <p class="level"><i class="far fa-plus-square"></i> Lvl 1</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="modal-screen">
-      <div id="shop-modal"></div>
       <div id="gameModal" class="animate__animated animate__zoomIn">
         <div class="modal-body">
           <div id="intro">
@@ -144,6 +180,8 @@
     <script type="module" src="modules/helpers.js"></script>
     <script type="module" src="modules/assets.js"></script>
     <script type="module" src="modules/upgrade.js"></script>
+    <script type="module" src="modules/memory.js"></script>
+    <script type="module" src="modules/icons.js"></script>
     <script type="module" src="script.js"></script>
   </body>
 </html>

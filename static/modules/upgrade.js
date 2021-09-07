@@ -1,14 +1,14 @@
-import Helpers from "./helpers";
+import Helpers from "./helpers.js";
 class Upgrade {
   _helper = new Helpers();
   reloadSpeedIncrement = 100;
   magazineSizeIncrement = 2;
   shootingSpeedIncrement = 30;
 
-  constructor(config) {
-    this.reloadSpeedIncrement = config.reloadSpeedIncrement;
-    this.magazineSizeIncrement = config.magazineSizeIncrement;
-    this.shootingSpeedIncrement = config.shootingSpeedIncrement;
+  constructor() {
+    // this.reloadSpeedIncrement = config.reloadSpeedIncrement;
+    // this.magazineSizeIncrement = config.magazineSizeIncrement;
+    // this.shootingSpeedIncrement = config.shootingSpeedIncrement;
   }
   reloadSpeedUpgrade() {
     // Build html

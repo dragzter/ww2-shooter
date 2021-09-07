@@ -7,12 +7,49 @@ import {
 } from "./modules/assets.js";
 import Helpers from "./modules/helpers.js";
 import Upgrade from "./modules/upgrade.js";
+import Memory from "./modules/memory.js";
+import Icon from "./modules/icons.js";
 
 window.onload = () => {
   // Init Classes
   const _ups = new Upgrade();
   const _helpers = new Helpers();
 
+  // =============================== DEV TESTING
+  const state = new Memory();
+  const icon = new Icon();
+  state.save({ round: 2 });
+
+  async function getData() {
+    return await fetch("./sample-data/sample.json");
+  }
+
+  async function retrieveData() {
+    let promise = await getData();
+    return await promise.json();
+  }
+
+  async function postData() {
+    return await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      body: JSON.stringify({
+        title: "foo",
+        body: "bar",
+        userId: 1,
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    });
+  }
+
+  (async () => {
+    let promise = await postData();
+    const data = await promise.json();
+    console.log(data);
+  })();
+
+  // =============================== DEV TESTING
   document.documentElement.style.setProperty("--animate-duration", ".5s");
 
   // DOM

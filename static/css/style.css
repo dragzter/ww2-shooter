@@ -5,6 +5,9 @@ body {
   background-color: #070414;
   font-family: "Source Code Pro", monospace;
 }
+div {
+  box-sizing: border-box;
+}
 #cover {
   width: 300px;
   position: absolute;
@@ -17,8 +20,77 @@ body {
 }
 
 #shop-modal {
-  display: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.7);
 }
+
+#shop-container {
+  justify-content: space-between;
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+#shop h1 {
+  z-index: 1;
+  position: relative;
+  color: #fff;
+}
+
+.card {
+  padding: 15px;
+  background: #e7e7e7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32%;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+.card .c-header i {
+  font-size: 60px;
+}
+
+.card .c-header {
+  width: 100%;
+  padding: 15px 5px;
+  border-radius: 3px;
+  border: 1px solid #cacaca;
+  background: #fefefe;
+  text-align: center;
+}
+
+.card .c-header.reload-up {
+  color: #13b34b;
+}
+
+.card .c-header.capacity-up {
+  color: #d44005;
+}
+
+.card .c-header.firespeed-up {
+  color: #0e9fb3;
+}
+
+.card .c-body p {
+  margin-bottom: 0;
+  text-align: center;
+  color: #000;
+  font-weight: 900;
+  padding: 5px;
+  border-radius: 3px;
+  background: #fff;
+  border: 1px solid #cacaca;
+  margin-top: 5px;
+}
+
+.card p.level {
+  background-color: #04ff69;
+  border: 1px solid #04da5a;
+}
+
 /* #crosshair {
   position: absolute;
   pointer-events: none;
@@ -260,11 +332,12 @@ select {
   width: 100%;
   pointer-events: none;
 }
-#gameModal {
+#gameModal,
+#shop {
   position: relative;
-  max-width: 600px;
+  max-width: 680px;
   overflow: hidden;
-  top: 35%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 40px;
@@ -274,6 +347,24 @@ select {
   background-position: top center;
   border-radius: 3px;
 }
+#modal-screen {
+  display: none;
+}
+#shop {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+#shop:after {
+  content: "";
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .modal-body {
   position: relative;
   z-index: 1;
