@@ -8,7 +8,6 @@ import {
 import Helpers from "./modules/helpers.js";
 import Upgrade from "./modules/upgrade.js";
 import Memory from "./modules/memory.js";
-import Icon from "./modules/icons.js";
 
 window.onload = () => {
   // Init Classes
@@ -17,37 +16,77 @@ window.onload = () => {
 
   // =============================== DEV TESTING
   const state = new Memory();
-  const icon = new Icon();
-  state.save({ round: 2 });
 
-  async function getData() {
-    return await fetch("./sample-data/sample.json");
-  }
+  let shopContainerDiv = document.getElementById("shop-container");
 
-  async function retrieveData() {
-    let promise = await getData();
-    return await promise.json();
-  }
+  // TODO - modifying player state based on upgrade selected
+  /**
+   * UPgrades - how they work
+   *
+   * 1. Player can access shop on victory screen if they have some number of points
+   * 2. Clicking shop opens modal to reveal upgrades.
+   * 3. If the player has the coins, they can buy a permamanenet stat boost from the available options.
+   * 4. Selecting an upgrade opens confirmation dialog.
+   * 5. If the player confirms, player stats are updated - points are subtracted, player is returned to previous victory screen.
+   * >> Speed, reload and capacity upgrade levels are saved to state and next rank is offered next time.  Each rank costs more, there will be a maximum upgrade rank for each type of upgrade
+   * 6. Player then starts next round.
+   *
+   */
 
-  async function postData() {
-    return await fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
-      body: JSON.stringify({
-        title: "foo",
-        body: "bar",
-        userId: 1,
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
-  }
+  const upConfig = [
+    {
+      level: 1,
+      cost: 285,
+      description: "+2 mag. capacity",
+      type: "capacity",
+    },
+    {
+      level: 4,
+      cost: 885,
+      description: "+7 mag. capacity",
+      type: "reload",
+    },
+    {
+      level: 2,
+      cost: 425,
+      description: "-200ms Realod Speed",
+      type: "speed",
+    },
+  ];
 
-  (async () => {
-    let promise = await postData();
-    const data = await promise.json();
-    console.log(data);
-  })();
+  upConfig.forEach((cfg) => {
+    let upCard = _ups.getUpgradeCard(cfg);
+    shopContainerDiv.appendChild(upCard);
+  });
+
+  // async function getData() {
+  //   return await fetch("./sample-data/sample.json");
+  // }
+
+  // async function retrieveData() {
+  //   let promise = await getData();
+  //   return await promise.json();
+  // }
+
+  // async function postData() {
+  //   return await fetch("https://jsonplaceholder.typicode.com/posts", {
+  //     method: "POST",
+  //     body: JSON.stringify({
+  //       title: "foo",
+  //       body: "bar",
+  //       userId: 1,
+  //     }),
+  //     headers: {
+  //       "Content-type": "application/json; charset=UTF-8",
+  //     },
+  //   });
+  // }
+
+  // (async () => {
+  //   let promise = await postData();
+  //   const data = await promise.json();
+  //   console.log(data);
+  // })();
 
   // =============================== DEV TESTING
   document.documentElement.style.setProperty("--animate-duration", ".5s");

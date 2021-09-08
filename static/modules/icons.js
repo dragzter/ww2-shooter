@@ -1,11 +1,15 @@
 class Icon {
-  icon(classes) {
-    return `<i class="${classes}"></i>`;
+  make(classes) {
+    const i = document.createElement("i");
+    const css = classes.split(" ");
+    i.classList.add(...css);
+    return i;
   }
   getAll() {
     return {
       plus: "far fa-plus-square",
       eraser: "fas fa-eraser",
+      folder: "fas fa-folder-plus",
       stop_watch: "fas fa-stopwatch",
       redo: "fas fa-redo",
       coins: "fas fa-coins",

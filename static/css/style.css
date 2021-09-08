@@ -18,7 +18,6 @@ div {
 .invisible {
   visibility: hidden;
 }
-
 #shop-modal {
   position: fixed;
   width: 100%;
@@ -26,7 +25,6 @@ div {
   z-index: 20;
   background: rgba(0, 0, 0, 0.7);
 }
-
 #shop-container {
   justify-content: space-between;
   display: flex;
@@ -38,7 +36,6 @@ div {
   position: relative;
   color: #fff;
 }
-
 .card {
   padding: 15px;
   background: #e7e7e7;
@@ -48,11 +45,22 @@ div {
   width: 32%;
   border: 1px solid #ccc;
   border-radius: 3px;
+  transition: 0.2s;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.card:hover {
+  transform: scale(1.01);
+  cursor: pointer;
+  border: 1px solid rgb(78, 78, 78);
+  background: #d3d3d3;
 }
 .card .c-header i {
   font-size: 60px;
 }
-
 .card .c-header {
   width: 100%;
   padding: 15px 5px;
@@ -61,19 +69,15 @@ div {
   background: #fefefe;
   text-align: center;
 }
-
 .card .c-header.reload-up {
   color: #13b34b;
 }
-
 .card .c-header.capacity-up {
   color: #d44005;
 }
-
 .card .c-header.firespeed-up {
   color: #0e9fb3;
 }
-
 .card .c-body p {
   margin-bottom: 0;
   text-align: center;
@@ -85,12 +89,10 @@ div {
   border: 1px solid #cacaca;
   margin-top: 5px;
 }
-
 .card p.level {
   background-color: #04ff69;
   border: 1px solid #04da5a;
 }
-
 /* #crosshair {
   position: absolute;
   pointer-events: none;
@@ -194,7 +196,6 @@ img#player {
   background: #ccc;
   outline: 1px solid #000;
 }
-
 .target img {
   width: 100%;
   pointer-events: none;
@@ -317,7 +318,6 @@ select {
   font-family: "Source Code Pro", monospace;
   background: url(../assets/dropdown.png) 96% / 15% no-repeat #fff;
 }
-
 .trooper {
   width: 70px;
   height: auto;
@@ -364,7 +364,6 @@ select {
   top: 0;
   left: 0;
 }
-
 .modal-body {
   position: relative;
   z-index: 1;
