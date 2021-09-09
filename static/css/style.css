@@ -161,6 +161,13 @@ div {
   font-weight: 600;
   border-radius: 5px;
 }
+.ui-info {
+  padding: 7px 10px;
+  background: #2da032;
+  color: #000;
+  font-weight: 600;
+  border-radius: 5px;
+}
 #tools div {
   display: inline-block;
 }
@@ -335,12 +342,12 @@ select {
 #gameModal,
 #shop {
   position: relative;
-  max-width: 680px;
+  max-width: 780px;
   overflow: hidden;
   top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 40px;
+  padding: 30px;
   background-color: rgb(240, 240, 240);
   background-image: url(../assets/introbanner.jpg);
   background-size: cover;
