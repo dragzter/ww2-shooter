@@ -75,7 +75,7 @@ div {
 .card .c-header.capacity-up {
   color: #d44005;
 }
-.card .c-header.firespeed-up {
+.card .c-header.speed-up {
   color: #0e9fb3;
 }
 .card .c-body p {
@@ -347,7 +347,10 @@ select {
   background-position: top center;
   border-radius: 3px;
 }
-#modal-screen {
+/* #modal-screen {
+  display: none;
+} */
+#shop-modal {
   display: none;
 }
 #shop {
@@ -407,9 +410,13 @@ select {
 .round-menu .round {
   width: 100%;
 }
-.round-menu #start {
+.round-menu #start,
+#go-shop {
   border: 1px solid #000;
   padding: 12px 20px;
+}
+#go-shop {
+  display: none;
 }
 .round-menu #start:hover {
   border-color: #ee2602;

@@ -17,8 +17,6 @@ window.onload = () => {
   // =============================== DEV TESTING
   const state = new Memory();
 
-  let shopContainerDiv = document.getElementById("shop-container");
-
   // TODO - modifying player state based on upgrade selected
   /**
    * UPgrades - how they work
@@ -33,31 +31,31 @@ window.onload = () => {
    *
    */
 
-  const upConfig = [
-    {
-      level: 1,
-      cost: 285,
-      description: "+2 mag. capacity",
-      type: "capacity",
-    },
-    {
-      level: 4,
-      cost: 885,
-      description: "+7 mag. capacity",
-      type: "reload",
-    },
-    {
-      level: 2,
-      cost: 425,
-      description: "-200ms Realod Speed",
-      type: "speed",
-    },
-  ];
+  // const upConfig = [
+  //   {
+  //     level: 1,
+  //     cost: 285,
+  //     description: "+2 mag. capacity",
+  //     type: "capacity",
+  //   },
+  //   {
+  //     level: 4,
+  //     cost: 885,
+  //     description: "+7 mag. capacity",
+  //     type: "reload",
+  //   },
+  //   {
+  //     level: 2,
+  //     cost: 425,
+  //     description: "-200ms Realod Speed",
+  //     type: "speed",
+  //   },
+  // ];
 
-  upConfig.forEach((cfg) => {
-    let upCard = _ups.getUpgradeCard(cfg);
-    shopContainerDiv.appendChild(upCard);
-  });
+  // upConfig.forEach((cfg) => {
+  //   let upCard = _ups.getUpgradeCard(cfg);
+  //   shopContainerDiv.appendChild(upCard);
+  // });
 
   // async function getData() {
   //   return await fetch("./sample-data/sample.json");
@@ -92,6 +90,7 @@ window.onload = () => {
   document.documentElement.style.setProperty("--animate-duration", ".5s");
 
   // DOM
+  let shopContainerDiv = document.getElementById("shop-container");
   let pointDiv = document.querySelector("#points");
   let crosshair = document.querySelector("#crosshair");
   let player = document.querySelector("#player");
@@ -108,9 +107,6 @@ window.onload = () => {
   let uiMessage = document.querySelector("#messages");
   let killsScoredIndicator = document.querySelector("#kills");
   let totalKillsScoredIndicator = document.querySelector("#tkills");
-  let hitpointsDiv = document.querySelector("#hp");
-  let maxAmmoDiv = document.querySelector("#maxAmmo");
-  let gameRoundDiv = document.querySelectorAll(".round");
   let playerCover = document.querySelector("#cover");
   let modal = document.querySelector("#modal-screen");
   let introText = document.querySelector("#intro");
@@ -121,11 +117,33 @@ window.onload = () => {
   let enemyNameElement = document.querySelector("#opponent-name");
   let restartGameButton = document.querySelector("#restart");
 
+  // Player stat html
+  let hitpointsDiv = document.querySelector("#hp");
+  let maxAmmoDiv = document.querySelector("#maxAmmo");
+  let reloadTimeDiv = document.querySelector("#reloadTime");
+  let gameRoundDiv = document.querySelectorAll(".round");
+
   // Player Stats
   let reloadSpeed = 3000;
   let maxPlayerAmmo = 10;
   let maxPlayerHitpoints = 100;
   let playerShootSpeed = 500;
+
+  // Upgrade levels config
+  let upgradeConfig = {
+    reloadUpgrade: {
+      level: 1,
+      cost: 280,
+    },
+    speedUpgrade: {
+      level: 1,
+      cost: 240,
+    },
+    capacityUpgrade: {
+      level: 1,
+      cost: 320,
+    },
+  };
 
   // Variables
   let currentPlayerAmmo = maxPlayerAmmo;
