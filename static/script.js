@@ -127,7 +127,7 @@ window.onload = () => {
   let reloadSpeed = 3000;
   let maxPlayerAmmo = 10;
   let maxPlayerHitpoints = 100;
-  let playerShootSpeed = 500;
+  let playerShootSpeed = 1000;
 
   // Upgrade levels config
   let upgradeConfig = {
@@ -923,6 +923,7 @@ window.onload = () => {
     if (isDebug()) {
       debugMode();
     } else {
+      setEnemyStats();
       setEnemyName();
       canPlayIntro();
       updateSummary();
