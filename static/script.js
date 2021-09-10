@@ -13,9 +13,9 @@ window.onload = () => {
   // Init Classes
   const _ups = new Upgrade();
   const _helpers = new Helpers();
+  const state = new Memory();
 
   // =============================== DEV TESTING
-  const state = new Memory();
 
   // TODO - modifying player state based on upgrade selected
   /**
@@ -30,27 +30,6 @@ window.onload = () => {
    * 6. Player then starts next round.
    *
    */
-
-  // const upConfig = [
-  //   {
-  //     level: 1,
-  //     cost: 285,
-  //     description: "+2 mag. capacity",
-  //     type: "capacity",
-  //   },
-  //   {
-  //     level: 4,
-  //     cost: 885,
-  //     description: "+7 mag. capacity",
-  //     type: "reload",
-  //   },
-  //   {
-  //     level: 2,
-  //     cost: 425,
-  //     description: "-200ms Realod Speed",
-  //     type: "speed",
-  //   },
-  // ];
 
   // upConfig.forEach((cfg) => {
   //   let upCard = _ups.getUpgradeCard(cfg);
@@ -90,6 +69,7 @@ window.onload = () => {
   document.documentElement.style.setProperty("--animate-duration", ".5s");
 
   // DOM
+  let shopModal = document.getElementById("shop-modal");
   let shopContainerDiv = document.getElementById("shop-container");
   let pointDiv = document.querySelector("#points");
   let crosshair = document.querySelector("#crosshair");
@@ -99,7 +79,7 @@ window.onload = () => {
   let reload = document.querySelector("#reload");
   let start = document.querySelector("#start");
   //let stop = document.querySelector("#stop");
-  let toolsCoontainer = document.querySelector("#tools");
+  let toolsContainer = document.querySelector("#tools");
   let roundsFiredIndicator = document.querySelector("#bullet-count");
   let magazine = document.querySelector("#magazine");
   let difficultySelect = document.querySelector("#game-difficulty");
@@ -116,6 +96,7 @@ window.onload = () => {
   let summaryEnemyCount = document.querySelector("#e-count");
   let enemyNameElement = document.querySelector("#opponent-name");
   let restartGameButton = document.querySelector("#restart");
+  let shopButton = document.getElementById("go-shop");
 
   // Player stat html
   let hitpointsDiv = document.querySelector("#hp");
@@ -134,14 +115,17 @@ window.onload = () => {
     reloadUpgrade: {
       level: 1,
       cost: 280,
+      max_level: 20,
     },
     speedUpgrade: {
       level: 1,
       cost: 240,
+      max_level: 15,
     },
     capacityUpgrade: {
       level: 1,
       cost: 320,
+      max_level: 20,
     },
   };
 
@@ -221,6 +205,10 @@ window.onload = () => {
    *  |      HELPERS     |
    * [0]================[0]
    */
+  function setInitialState() {
+    state.save({ points, gameRound });
+    state.save(upgradeConfig);
+  }
 
   function getCenter(element) {
     const { left, top, width, height } = element.getBoundingClientRect();
@@ -282,10 +270,10 @@ window.onload = () => {
       e.target.classList.contains("trooper")
     ) {
       playSound("hit");
-      points += pointsEarned;
+
       killTarget(container);
-      kills++;
-      totalKills++;
+      incrementKills();
+      incrementPoints();
       checkRoundComplete();
     }
     placeBullet(bulletHole, e);
@@ -297,6 +285,17 @@ window.onload = () => {
     playSound("victory");
   }
 
+  function incrementKills() {
+    kills++;
+    totalKills++;
+    state.save({ totalKills });
+  }
+
+  function incrementPoints() {
+    points += pointsEarned;
+    state.save({ points });
+  }
+
   // Take all the steps to start next round
   function advanceToNextRound() {
     gameRound++;
@@ -306,6 +305,8 @@ window.onload = () => {
     updateUi();
     updateSummary();
     showGameModal();
+    showShopButton();
+    state.save({ gameRound });
   }
 
   function stepUpDifficulty() {
@@ -692,11 +693,23 @@ window.onload = () => {
   }
 
   function showGameModal() {
+    setRandomModalBG();
+    modal.style.display = "block";
+  }
+
+  function showShopModal() {
+    shopModal.style.display = "block";
+  }
+
+  function hideShopModal() {
+    shopModal.style.display = "none";
+  }
+
+  function setRandomModalBG() {
     let choiceLibrary = playerDefeated ? defeatBg : endOfRoundBg;
     let choice = _helpers.randomInt(choiceLibrary.length);
     modal.querySelector("#gameModal").style.backgroundImage =
       "url(" + choiceLibrary[choice] + ")";
-    modal.style.display = "block";
   }
 
   function hideUiElements() {
@@ -706,10 +719,16 @@ window.onload = () => {
     player.classList.add("invisible");
   }
 
+  function showShopButton() {
+    if (gameRound > 1) {
+      shopButton.style.display = "inline-block";
+    }
+  }
+
   function showUiElements() {
     if (gameRound === 1) {
       battlefield.style.visibility = "visible";
-      toolsCoontainer.style.visibility = "visible";
+      toolsContainer.style.visibility = "visible";
     }
     battlefield.classList.remove("no-interact");
     playerCover.style.display = "block";
@@ -761,7 +780,7 @@ window.onload = () => {
     switch (difficultyLevel) {
       case "teasy":
         enemySpeed = 1;
-        waveCount = 18;
+        waveCount = 1;
         enemySpawnFrequency = 2400;
         playerDamageTaken = 5;
         pointsEarned = 10;
@@ -802,12 +821,57 @@ window.onload = () => {
    * [0]================[0]
    */
   // TODO -- Build an upgrade system where the player can purchase upgrade with points earned
+  function createAndRenderUpgrades() {
+    const { capacityUpgrade, reloadUpgrade, speedUpgrade } = state.read();
+    // There are only 3 types of upgrades, speed, capacity and reload.
+    const capacityUp = {
+      type: "capacity",
+      description: "+2 Magazine Capacity",
+      cost: capacityUpgrade.cost,
+      level: capacityUpgrade.level,
+    };
+    const speedUp = {
+      type: "speed",
+      description: "-50ms Firing Speed",
+      cost: speedUpgrade.cost,
+      level: speedUpgrade.level,
+    };
+    const reloadUp = {
+      type: "reload",
+      description: "-200ms Realod Time",
+      cost: reloadUpgrade.cost,
+      level: reloadUpgrade.level,
+    };
 
+    const upConfig = [];
+    if (capacityUpgrade.level < capacityUpgrade.max_level) {
+      upConfig.push(capacityUp);
+    }
+    if (speedUpgrade.level < speedUpgrade.max_level) {
+      upConfig.push(speedUp);
+    }
+    if (reloadUpgrade.level < reloadUpgrade.max_level) {
+      upConfig.push(reloadUp);
+    }
+
+    upConfig.forEach((cfg) => {
+      let upCard = _ups.getUpgradeCard(cfg);
+      shopContainerDiv.appendChild(upCard);
+    });
+  }
+
+  function showUpgradePurchaseAbility() {}
   /**
    * [0]================[0]
    *  |      EVENTS      |
    * [0]================[0]
    */
+
+  shopButton.addEventListener("click", () => {
+    hideGameModal();
+    showShopModal();
+    createAndRenderUpgrades();
+  });
 
   addEventListener("mousemove", (e) => {
     const angle = Math.atan2(
@@ -923,6 +987,7 @@ window.onload = () => {
     if (isDebug()) {
       debugMode();
     } else {
+      setInitialState();
       setEnemyStats();
       setEnemyName();
       canPlayIntro();

@@ -12,6 +12,8 @@ class Memory {
     let cache = {};
     if (memory) {
       cache = Object.assign(memory, state);
+    } else {
+      cache = memory;
     }
     localStorage.setItem(this.id, JSON.stringify(cache));
   }
