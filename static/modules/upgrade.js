@@ -5,7 +5,7 @@ class Upgrade {
   _icon = new Icon();
 
   getUpgradeCard(upgradeConfig) {
-    const { type, description, cost, level, max_level } = upgradeConfig;
+    const { type, description, cost, level, max_level, value } = upgradeConfig;
     // Build html
     const card = this.getWrapperHtml();
     const coinsIcon = this._icon.make("fas fa-coins");
@@ -22,6 +22,7 @@ class Upgrade {
     card.dataset.type = type;
     card.dataset.cost = cost;
     card.dataset.description = description;
+    card.dataset.value = value;
 
     switch (type) {
       case "speed":

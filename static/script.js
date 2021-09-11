@@ -80,15 +80,18 @@ window.onload = () => {
   let shopButton = document.getElementById("go-shop");
   let shopPointsDiv = document.getElementById("shop-points");
   let backToMenuBtn = document.getElementById("back-to-menu");
+  let hpLabel = document.getElementById("hp-label");
+  let notifyWindowTooShort = document.getElementById("notify-window-too-short");
 
   // Player stat html
   let hitpointsDiv = document.querySelector("#hp");
-  let maxAmmoDiv = document.querySelector("#maxAmmo");
-  let reloadTimeDiv = document.querySelector("#reloadTime");
+  let playerMaxAmmoDiv = document.querySelector("#maxAmmo");
+  let playerShootSpeedDiv = document.getElementById("shootSpeed");
+  let playerReloadSpeedDiv = document.querySelector("#reloadTime");
   let gameRoundDiv = document.querySelectorAll(".round");
 
   // Player Stats
-  let reloadSpeed = 3000;
+  let reloadSpeed = 4000;
   let maxPlayerAmmo = 10;
   let maxPlayerHitpoints = 100;
   let playerShootSpeed = 1000;
@@ -99,18 +102,21 @@ window.onload = () => {
       level: 1,
       type: "reload",
       cost: 280,
+      value: 180,
       max_level: 20,
     },
     speedUpgrade: {
       level: 1,
       type: "speed",
       cost: 240,
+      value: 50,
       max_level: 15,
     },
     capacityUpgrade: {
       level: 1,
       type: "capacity",
-      cost: 320,
+      cost: 300,
+      value: 2,
       max_level: 20,
     },
   };
@@ -135,6 +141,7 @@ window.onload = () => {
 
   // Trackers
   let points = 0;
+  let toalPoints = 0;
   let bulletsFired = 0;
   let gameRound = 1;
   let kills = 0;
@@ -152,6 +159,7 @@ window.onload = () => {
   let enemySpeedMaxed = false;
   let enemySpawnRateMaxed = false;
   let enemyWaveCountMaxed = false;
+  let windowTooShort = false;
 
   // DEV vars
   let targetStoppedPosition = 10;
@@ -192,8 +200,21 @@ window.onload = () => {
    * [0]================[0]
    */
   function setInitialState() {
-    state.save({ points, gameRound });
+    state.save({ points, gameRound, totalKills });
     state.save(upgradeConfig);
+  }
+
+  // If the window is not tlal enough , we do not play.
+  function checkWindowHeight() {
+    if (window.innerHeight < 950) {
+      alert(
+        "Your browser window is not tall enough.  The recommended minimum height is 950px."
+      );
+      battlefield.remove();
+      modal.remove();
+      windowTooShort = true;
+      notifyWindowTooShort.style.display = "block";
+    }
   }
 
   function getCenter(element) {
@@ -278,7 +299,7 @@ window.onload = () => {
   }
 
   function incrementPoints() {
-    points += pointsEarned;
+    points += pointsEarned + gameRound;
     state.save({ points });
   }
 
@@ -296,7 +317,6 @@ window.onload = () => {
   }
 
   function stepUpDifficulty() {
-    console.log(maxEnemyValues[difficultyLevel].speed);
     if (enemySpeed < maxEnemyValues[difficultyLevel].speed) {
       enemySpeed += 0.1;
     } else {
@@ -543,7 +563,7 @@ window.onload = () => {
 
   function damagePlayer() {
     enemyBrokenThrough++;
-    announce("A enemy has broken through!");
+    announce("An enemy has broken through!");
     currentPlayerHitpoints -= playerDamageTaken;
     if (playerIsOutOfHp()) {
       currentPlayerHitpoints = 0;
@@ -621,15 +641,20 @@ window.onload = () => {
 
   // Communicate state in ui - ammo count, reload etc.
   function updateUi() {
+    playerMaxAmmoDiv.textContent = `Max Ammo: ${maxPlayerAmmo}`;
+    playerShootSpeedDiv.textContent = `Shoot Speed: ${playerShootSpeed}ms`;
+    playerReloadSpeedDiv.textContent = `Reaload Speed: ${reloadSpeed}ms`;
     shopPointsDiv.textContent = points + " points remaining.";
     pointDiv.textContent = "Points: " + points;
     roundsFiredIndicator.textContent = "Rounds Fired: " + bulletsFired;
     killsScoredIndicator.textContent = "Kills: " + kills;
-    hitpointsDiv.textContent = "Hitpoints: " + currentPlayerHitpoints;
+    hitpointsDiv.value = currentPlayerHitpoints;
+    hpLabel.textContent = `Health: ${currentPlayerHitpoints}%`;
     gameRoundDiv.forEach((div) => {
       div.textContent = "Round: " + gameRound;
     });
     totalKillsScoredIndicator.textContent = "Total Kills: " + totalKills;
+    state.save({ points, totalKills, gameRound });
   }
 
   /**
@@ -767,7 +792,7 @@ window.onload = () => {
     switch (difficultyLevel) {
       case "teasy":
         enemySpeed = 1;
-        waveCount = 1;
+        waveCount = 18;
         enemySpawnFrequency = 2400;
         playerDamageTaken = 5;
         pointsEarned = 10;
@@ -813,24 +838,27 @@ window.onload = () => {
     // There are only 3 types of upgrades, speed, capacity and reload.
     const capacityUp = {
       type: "capacity",
-      description: "+2 Magazine Capacity",
+      description: `+${capacityUpgrade.value} Magazine Round Capacity`,
       cost: capacityUpgrade.cost,
       level: capacityUpgrade.level,
       max_level: capacityUpgrade.max_level,
+      value: capacityUpgrade.value,
     };
     const speedUp = {
       type: "speed",
-      description: "-50ms Firing Speed",
+      description: `-${speedUpgrade.value}ms Firing Speed`,
       cost: speedUpgrade.cost,
       level: speedUpgrade.level,
       max_level: speedUpgrade.max_level,
+      value: speedUpgrade.value,
     };
     const reloadUp = {
       type: "reload",
-      description: "-200ms Realod Time",
+      description: `-${reloadUpgrade.value}ms Realod Time`,
       cost: reloadUpgrade.cost,
       level: reloadUpgrade.level,
       max_level: reloadUpgrade.max_level,
+      value: reloadUpgrade.value,
     };
 
     const upConfig = [];
@@ -844,6 +872,7 @@ window.onload = () => {
       upConfig.push(reloadUp);
     }
 
+    // Generate the upgrade card html
     upConfig.forEach((cfg) => {
       let upCard = _ups.getUpgradeCard(cfg);
       shopContainerDiv.appendChild(upCard);
@@ -862,29 +891,24 @@ window.onload = () => {
     const cards = document.querySelectorAll(".shop-item.card");
     cards.forEach((card) => {
       let cost = +card.dataset.cost;
-      let type = card.dataset.type;
-      let desc = card.dataset.description;
-
-      console.log(cost, points);
       if (cost > points) {
         card.classList.add("disabled");
       } else {
         card.classList.remove("disabled");
       }
-
-      onUpgradeCardClick(card, desc, cost, type);
+      onUpgradeCardClick(card);
     });
   }
 
-  function onUpgradeCardClick(card, desc, cost, type) {
+  function onUpgradeCardClick(card) {
     card.addEventListener("click", (e) => {
       const purchaseUpgrade = confirm(
-        `Are you sure you want to purchase ${desc} for ${cost} points.`
+        `Are you sure you want to purchase ${card.dataset.desc} for ${card.dataset.cost} points.`
       );
       if (purchaseUpgrade) {
-        points -= cost;
-        state.save({ points });
-        incrementUpgradeState(type);
+        points -= card.dataset.cost;
+        incrementUpgradeState(card.dataset.type);
+        upgradePlayerStats(card);
         createAndRenderUpgrades();
         showUpgradePurchaseAbility();
         updateUi();
@@ -892,6 +916,21 @@ window.onload = () => {
     });
   }
 
+  function upgradePlayerStats(card) {
+    switch (card.dataset.type) {
+      case "reload":
+        reloadSpeed -= parseInt(card.dataset.value);
+        break;
+      case "speed":
+        playerShootSpeed -= parseInt(card.dataset.value);
+        break;
+      case "capacity":
+        maxPlayerAmmo += parseInt(card.dataset.value);
+    }
+    updateUi();
+  }
+
+  // Update level and costs upgrades.
   function incrementUpgradeState(type) {
     const { capacityUpgrade, reloadUpgrade, speedUpgrade } = state.read();
     switch (type) {
@@ -908,6 +947,7 @@ window.onload = () => {
         capacityUpgrade.cost += 200;
         break;
     }
+    // Save them in state to when the new upgrades are rendered, we have the latest info.
     state.save({ capacityUpgrade, reloadUpgrade, speedUpgrade });
   }
 
@@ -998,9 +1038,7 @@ window.onload = () => {
   });
 
   restartGameButton.addEventListener("click", () => {
-    // TODO - go back to main menu instead - not just restart
-    resetGame();
-    startGame();
+    location.reload();
   });
 
   // Handle some key binds
@@ -1016,7 +1054,7 @@ window.onload = () => {
   // Have to interacting with the app to play intro music
   function canPlayIntro() {
     document.addEventListener("click", () => {
-      if (!introHasPlayed) {
+      if (!introHasPlayed && !windowTooShort) {
         introHasPlayed = true;
         startIntroMusic();
       }
@@ -1039,6 +1077,7 @@ window.onload = () => {
 
   // Initialize Game
   function init() {
+    checkWindowHeight();
     if (isDebug()) {
       debugMode();
     } else {

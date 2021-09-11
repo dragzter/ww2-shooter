@@ -103,10 +103,13 @@
     </div>
     <div id="battlefield" class="no-interact">
       <div id="hud" class="unselectable">
-        <span id="hp">Hitpoints: 100</span>
-        <span id="shootSpeed">Shooting Speed: 400ms</span>
-        <span id="reloadTime">Reload Speed: 3s</span>
-        <span id="maxAmmo">Max Ammo: 10</span>
+        <div id="hp-container">
+          <progress id="hp" value="100" max="100"></progress>
+          <label id="hp-label" for="hp"></label>
+        </div>
+        <span id="shootSpeed"></span>
+        <span id="reloadTime"></span>
+        <span id="maxAmmo"></span>
         <span class="round" id="round">Round: 1</span>
       </div>
       <img
@@ -136,26 +139,36 @@
         <option selected value="survival">Survival</option>
       </select> -->
 
-      <button id="clear"><i class="fas fa-eraser"></i> Clear</button>
-      <button id="reload"><i class="fas fa-redo"></i> Reload</button>
-
-      <div class="ui-text">
+      <div class="ui-text tool-item">
         <span id="bullet-count">Rounds Fired: 0</span>
         <i class="fab fa-stack-overflow"></i>
       </div>
-      <div class="ui-text">
+      <div class="ui-text tool-item">
         <span id="points">Points: 0</span> <i class="fas fa-medal"></i>
       </div>
-      <div class="ui-text">
+      <div class="ui-text tool-item">
         <span id="kills">Kills: 0</span> <i class="fas fa-skull-crossbones"></i>
       </div>
-      <div class="ui-text bg-caen">
+      <div class="ui-text bg-caen tool-item">
         <span id="tkills">Total Kills: 0</span>
         <i class="fas fa-skull-crossbones"></i>
       </div>
+      <button class="invisible" id="clear">
+        <i class="fas fa-eraser"></i> Clear
+      </button>
+      <button class="invisible" id="reload">
+        <i class="fas fa-redo"></i> Reload
+      </button>
+      <p class="d-i-block">Press <span>R</span> to reload</p>
       <!-- <hr />
       <p>Press <span>R</span> to reload</p>
       <p>Press <span>C</span> to clear bullet holes</p> -->
+    </div>
+    <div id="notify-window-too-short">
+      <div><i class="fas fa-exclamation-triangle"></i></div>
+      The game requires a minimum browser window dimension of at least
+      <strong>1025 x 950 pixels</strong> to play. Adjust your browser height and
+      refresh the page.
     </div>
     <script type="module" src="modules/helpers.js"></script>
     <script type="module" src="modules/assets.js"></script>
