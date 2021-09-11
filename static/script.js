@@ -903,7 +903,7 @@ window.onload = () => {
   function onUpgradeCardClick(card) {
     card.addEventListener("click", (e) => {
       const purchaseUpgrade = confirm(
-        `Are you sure you want to purchase ${card.dataset.desc} for ${card.dataset.cost} points.`
+        `Are you sure you want to purchase ${card.dataset.description} for ${card.dataset.cost} points.`
       );
       if (purchaseUpgrade) {
         points -= card.dataset.cost;
