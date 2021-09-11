@@ -17,25 +17,6 @@ window.onload = () => {
 
   // =============================== DEV TESTING
 
-  // TODO - modifying player state based on upgrade selected
-  /**
-   * UPgrades - how they work
-   *
-   * 1. Player can access shop on victory screen if they have some number of points
-   * 2. Clicking shop opens modal to reveal upgrades.
-   * 3. If the player has the coins, they can buy a permamanenet stat boost from the available options.
-   * 4. Selecting an upgrade opens confirmation dialog.
-   * 5. If the player confirms, player stats are updated - points are subtracted, player is returned to previous victory screen.
-   * >> Speed, reload and capacity upgrade levels are saved to state and next rank is offered next time.  Each rank costs more, there will be a maximum upgrade rank for each type of upgrade
-   * 6. Player then starts next round.
-   *
-   */
-
-  // upConfig.forEach((cfg) => {
-  //   let upCard = _ups.getUpgradeCard(cfg);
-  //   shopContainerDiv.appendChild(upCard);
-  // });
-
   // async function getData() {
   //   return await fetch("./sample-data/sample.json");
   // }
@@ -97,6 +78,8 @@ window.onload = () => {
   let enemyNameElement = document.querySelector("#opponent-name");
   let restartGameButton = document.querySelector("#restart");
   let shopButton = document.getElementById("go-shop");
+  let shopPointsDiv = document.getElementById("shop-points");
+  let backToMenuBtn = document.getElementById("back-to-menu");
 
   // Player stat html
   let hitpointsDiv = document.querySelector("#hp");
@@ -114,16 +97,19 @@ window.onload = () => {
   let upgradeConfig = {
     reloadUpgrade: {
       level: 1,
+      type: "reload",
       cost: 280,
       max_level: 20,
     },
     speedUpgrade: {
       level: 1,
+      type: "speed",
       cost: 240,
       max_level: 15,
     },
     capacityUpgrade: {
       level: 1,
+      type: "capacity",
       cost: 320,
       max_level: 20,
     },
@@ -635,6 +621,7 @@ window.onload = () => {
 
   // Communicate state in ui - ammo count, reload etc.
   function updateUi() {
+    shopPointsDiv.textContent = points + " points remaining.";
     pointDiv.textContent = "Points: " + points;
     roundsFiredIndicator.textContent = "Rounds Fired: " + bulletsFired;
     killsScoredIndicator.textContent = "Kills: " + kills;
@@ -820,27 +807,30 @@ window.onload = () => {
    *  |     UPGRADES     |
    * [0]================[0]
    */
-  // TODO -- Build an upgrade system where the player can purchase upgrade with points earned
   function createAndRenderUpgrades() {
     const { capacityUpgrade, reloadUpgrade, speedUpgrade } = state.read();
+    clearCards();
     // There are only 3 types of upgrades, speed, capacity and reload.
     const capacityUp = {
       type: "capacity",
       description: "+2 Magazine Capacity",
       cost: capacityUpgrade.cost,
       level: capacityUpgrade.level,
+      max_level: capacityUpgrade.max_level,
     };
     const speedUp = {
       type: "speed",
       description: "-50ms Firing Speed",
       cost: speedUpgrade.cost,
       level: speedUpgrade.level,
+      max_level: speedUpgrade.max_level,
     };
     const reloadUp = {
       type: "reload",
       description: "-200ms Realod Time",
       cost: reloadUpgrade.cost,
       level: reloadUpgrade.level,
+      max_level: reloadUpgrade.max_level,
     };
 
     const upConfig = [];
@@ -860,17 +850,82 @@ window.onload = () => {
     });
   }
 
-  function showUpgradePurchaseAbility() {}
+  function clearCards() {
+    const cards = document.querySelectorAll(".shop-item.card");
+    cards.forEach((card) => {
+      card.remove();
+    });
+  }
+
+  function showUpgradePurchaseAbility() {
+    const { points } = state.read();
+    const cards = document.querySelectorAll(".shop-item.card");
+    cards.forEach((card) => {
+      let cost = +card.dataset.cost;
+      let type = card.dataset.type;
+      let desc = card.dataset.description;
+
+      console.log(cost, points);
+      if (cost > points) {
+        card.classList.add("disabled");
+      } else {
+        card.classList.remove("disabled");
+      }
+
+      onUpgradeCardClick(card, desc, cost, type);
+    });
+  }
+
+  function onUpgradeCardClick(card, desc, cost, type) {
+    card.addEventListener("click", (e) => {
+      const purchaseUpgrade = confirm(
+        `Are you sure you want to purchase ${desc} for ${cost} points.`
+      );
+      if (purchaseUpgrade) {
+        points -= cost;
+        state.save({ points });
+        incrementUpgradeState(type);
+        createAndRenderUpgrades();
+        showUpgradePurchaseAbility();
+        updateUi();
+      }
+    });
+  }
+
+  function incrementUpgradeState(type) {
+    const { capacityUpgrade, reloadUpgrade, speedUpgrade } = state.read();
+    switch (type) {
+      case "reload":
+        reloadUpgrade.level++;
+        reloadUpgrade.cost += 140;
+        break;
+      case "speed":
+        speedUpgrade.level++;
+        speedUpgrade.cost += 110;
+        break;
+      case "capacity":
+        capacityUpgrade.level++;
+        capacityUpgrade.cost += 200;
+        break;
+    }
+    state.save({ capacityUpgrade, reloadUpgrade, speedUpgrade });
+  }
+
   /**
    * [0]================[0]
    *  |      EVENTS      |
    * [0]================[0]
    */
+  backToMenuBtn.addEventListener("click", () => {
+    hideShopModal();
+    showGameModal();
+  });
 
   shopButton.addEventListener("click", () => {
     hideGameModal();
     showShopModal();
     createAndRenderUpgrades();
+    showUpgradePurchaseAbility();
   });
 
   addEventListener("mousemove", (e) => {

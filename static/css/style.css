@@ -26,10 +26,11 @@ div {
   background: rgba(0, 0, 0, 0.7);
 }
 #shop-container {
-  justify-content: space-between;
+  justify-content: flex-end;
   display: flex;
   position: relative;
   z-index: 1;
+  width: 100%;
 }
 #shop h1 {
   z-index: 1;
@@ -38,6 +39,7 @@ div {
 }
 .card {
   padding: 15px;
+  position: relative;
   background: #e7e7e7;
   display: flex;
   flex-direction: column;
@@ -45,6 +47,7 @@ div {
   width: 32%;
   border: 1px solid #ccc;
   border-radius: 3px;
+  margin: 5px;
   transition: 0.2s;
   -moz-user-select: -moz-none;
   -khtml-user-select: none;
@@ -83,7 +86,7 @@ div {
   text-align: center;
   color: #000;
   font-weight: 900;
-  padding: 5px;
+  padding: 5px 18px;
   border-radius: 3px;
   background: #fff;
   border: 1px solid #cacaca;
@@ -92,6 +95,9 @@ div {
 .card p.level {
   background-color: #04ff69;
   border: 1px solid #04da5a;
+}
+.card .desc {
+  min-height: 32px;
 }
 /* #crosshair {
   position: absolute;
@@ -167,6 +173,15 @@ div {
   color: #000;
   font-weight: 600;
   border-radius: 5px;
+}
+.ui-info-warning {
+  padding: 12px 20px;
+  background: #ec830c;
+  color: #000;
+  border-radius: 5px;
+  font-weight: 900;
+  font-size: 17px;
+  line-height: 1;
 }
 #tools div {
   display: inline-block;
@@ -344,6 +359,8 @@ select {
   position: relative;
   max-width: 780px;
   overflow: hidden;
+  min-height: 450px;
+  display: flex;
   top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -353,6 +370,9 @@ select {
   background-size: cover;
   background-position: top center;
   border-radius: 3px;
+  align-content: center;
+  align-items: center;
+  justify-content: space-between;
 }
 /* #modal-screen {
   display: none;
@@ -364,6 +384,39 @@ select {
   display: flex;
   align-items: center;
   flex-direction: column;
+  top: 40%;
+  justify-content: space-between;
+  height: 530px;
+}
+.shop-item.card.disabled {
+  pointer-events: none;
+  filter: grayscale(1) brightness(0.6);
+}
+.shop-item.card.disabled::after {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#shop-points {
+  display: inline-block;
+  margin-left: 20px;
+}
+.buttons-container {
+  z-index: 1;
+  width: 100%;
+  padding-top: 15px;
+  display: flex;
+  align-items: center;
+}
+#back-to-menu {
+  z-index: 1;
+  display: inline-block;
+  margin-right: auto;
+  margin-left: 5px;
+  padding: 12px 20px;
 }
 #shop:after {
   content: "";

@@ -5,7 +5,7 @@ class Upgrade {
   _icon = new Icon();
 
   getUpgradeCard(upgradeConfig) {
-    const { type, description, cost, level } = upgradeConfig;
+    const { type, description, cost, level, max_level } = upgradeConfig;
     // Build html
     const card = this.getWrapperHtml();
     const coinsIcon = this._icon.make("fas fa-coins");
@@ -21,6 +21,7 @@ class Upgrade {
     card.dataset.level = level;
     card.dataset.type = type;
     card.dataset.cost = cost;
+    card.dataset.description = description;
 
     switch (type) {
       case "speed":
@@ -36,6 +37,7 @@ class Upgrade {
 
     // Card header - holding the main icon
     cardHeader.classList.add("c-header", `${type}-up`);
+    descriptEl.classList.add("desc");
     cardHeader.appendChild(upgradeIcon);
 
     // Sub elements of header and body
@@ -44,7 +46,7 @@ class Upgrade {
 
     descriptEl.textContent = description;
     costEl.textContent = ` ${cost}`;
-    levelEl.textContent = ` ${level}`;
+    levelEl.textContent = ` ${level}/${max_level}`;
 
     costEl.prepend(coinsIcon);
     levelEl.prepend(levelsIcon);
