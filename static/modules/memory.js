@@ -13,7 +13,7 @@ class Memory {
     if (memory) {
       cache = Object.assign(memory, state);
     } else {
-      cache = memory;
+      cache = state;
     }
     localStorage.setItem(this.id, JSON.stringify(cache));
   }
