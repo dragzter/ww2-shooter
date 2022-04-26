@@ -12,6 +12,13 @@ const enemySelectionLibrary = [
   "assets/german11-green.png",
 ];
 
+const enemySelectionTeamsLibrary = [
+  "assets/mg-team-1-green.png",
+  "assets/panzerschreck-1-grey.png",
+];
+
+const tigerTank = [""];
+
 const roundBg = [
   "assets/endofround2.jpg",
   "assets/endofround3.png",
@@ -52,11 +59,7 @@ const enemyDivisionNames = [
   "20th Motorized Infantry Division",
 ];
 
-const defeatBackgrounds = [
-  "assets/defeat1.jpg",
-  "assets/defeat2.jpg",
-  "assets/defeat3.jpg",
-];
+const defeatBackgrounds = ["assets/defeat1.jpg", "assets/defeat2.jpg", "assets/defeat3.jpg"];
 
 const sound = {
   rifle1: new Audio("assets/gun-gunshot-01.wav"),
@@ -78,5 +81,6 @@ export {
   defeatBackgrounds,
   enemyDivisionNames,
   enemySelectionLibrary,
+  enemySelectionTeamsLibrary,
   sound,
 };

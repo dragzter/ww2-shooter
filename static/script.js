@@ -15,38 +15,6 @@ window.onload = () => {
   const _helpers = new Helpers();
   const state = new Memory();
 
-  // =============================== DEV TESTING
-
-  // async function getData() {
-  //   return await fetch("./sample-data/sample.json");
-  // }
-
-  // async function retrieveData() {
-  //   let promise = await getData();
-  //   return await promise.json();
-  // }
-
-  // async function postData() {
-  //   return await fetch("https://jsonplaceholder.typicode.com/posts", {
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       title: "foo",
-  //       body: "bar",
-  //       userId: 1,
-  //     }),
-  //     headers: {
-  //       "Content-type": "application/json; charset=UTF-8",
-  //     },
-  //   });
-  // }
-
-  // (async () => {
-  //   let promise = await postData();
-  //   const data = await promise.json();
-  //   console.log(data);
-  // })();
-
-  // =============================== DEV TESTING
   document.documentElement.style.setProperty("--animate-duration", ".5s");
 
   // DOM
@@ -172,7 +140,6 @@ window.onload = () => {
   let battleSound = sound.battleSound;
   let garand = sound.garand;
   let enfield = sound.enfield;
-  let whack = sound.whack;
   let thud = sound.thud;
   let reloadSound = sound.reloadSound;
   let empty = sound.empty;
@@ -207,9 +174,7 @@ window.onload = () => {
   // If the window is not tlal enough , we do not play.
   function checkWindowHeight() {
     if (window.innerHeight < 950) {
-      alert(
-        "Your browser window is not tall enough.  The recommended minimum height is 950px."
-      );
+      alert("Your browser window is not tall enough.  The recommended minimum height is 950px.");
       battlefield.remove();
       modal.remove();
       windowTooShort = true;
@@ -272,10 +237,7 @@ window.onload = () => {
     let bulletHole = createBulletHole();
     container.appendChild(bulletHole);
 
-    if (
-      e.target.classList.contains("target") ||
-      e.target.classList.contains("trooper")
-    ) {
+    if (e.target.classList.contains("target") || e.target.classList.contains("trooper")) {
       playSound("hit");
 
       killTarget(container);
@@ -484,11 +446,10 @@ window.onload = () => {
   }
 
   // Generate enemy trooper
-  function makeEnemy() {
+  function generateEnemy() {
     let choice = _helpers.randomInt(enemySelection.length);
     let trooper = document.createElement("img");
-    let camoColor =
-      enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
+    let camoColor = enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
     trooper.src = enemySelection[choice];
     trooper.dataset.camo = camoColor;
     return _helpers.generateItem(trooper, "trooper");
@@ -507,7 +468,7 @@ window.onload = () => {
 
   function createAndSpawnEnemy() {
     enemyCount++;
-    let target = makeEnemy();
+    let target = generateEnemy();
     let targetPosition = _helpers.generateSpawnLocation();
     battlefield.appendChild(target);
     target.style.top = targetPosition.top;
@@ -519,11 +480,7 @@ window.onload = () => {
   // Create bullet hole element and return it
   function createBulletHole() {
     let bulletHole = document.createElement("div");
-    bulletHole.classList.add(
-      "bullet-hole",
-      "animate__animated",
-      "animate__pulse"
-    );
+    bulletHole.classList.add("bullet-hole", "animate__animated", "animate__pulse");
     bulletHole.id = "bullet-hole-" + bulletsFired;
     return bulletHole;
   }
@@ -720,8 +677,7 @@ window.onload = () => {
   function setRandomModalBG() {
     let choiceLibrary = playerDefeated ? defeatBg : endOfRoundBg;
     let choice = _helpers.randomInt(choiceLibrary.length);
-    modal.querySelector("#gameModal").style.backgroundImage =
-      "url(" + choiceLibrary[choice] + ")";
+    modal.querySelector("#gameModal").style.backgroundImage = "url(" + choiceLibrary[choice] + ")";
   }
 
   function hideUiElements() {
@@ -969,10 +925,7 @@ window.onload = () => {
   });
 
   addEventListener("mousemove", (e) => {
-    const angle = Math.atan2(
-      e.clientY - playerCenter.y,
-      e.clientX - playerCenter.x
-    );
+    const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x);
     player.style.transform = `rotate(${angle + 1.5}rad)`;
   });
 
@@ -1056,7 +1009,7 @@ window.onload = () => {
     document.addEventListener("click", () => {
       if (!introHasPlayed && !windowTooShort) {
         introHasPlayed = true;
-        startIntroMusic();
+        //startIntroMusic();
       }
     });
   }
