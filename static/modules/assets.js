@@ -17,7 +17,7 @@ const enemySelectionTeamsLibrary = [
   "assets/panzerschreck-1-grey.png",
 ];
 
-const tigerTank = [""];
+const tanks = ["assets/jagtpanther-1.png", "assets/tiger-one-web.png"];
 
 const roundBg = [
   "assets/endofround2.jpg",
@@ -83,4 +83,5 @@ export {
   enemySelectionLibrary,
   enemySelectionTeamsLibrary,
   sound,
+  tanks,
 };

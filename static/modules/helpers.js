@@ -5,24 +5,20 @@ class Helpers {
         .toString(16)
         .substring(1);
     };
-    return (
-      s4() +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      "-" +
-      s4() +
-      s4() +
-      s4()
-    );
+    return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
   }
 
   randomInt(n) {
     return Math.floor(Math.random() * n);
+  }
+
+  woundTable(key) {
+    let wounds = {
+      trooper: 1,
+      team: 2,
+      tank: 10,
+    };
+    return wounds[key];
   }
 
   difficultyBounds() {
@@ -31,26 +27,31 @@ class Helpers {
         speed: 2,
         spawnRate: 1800,
         count: 70,
+        teams: 0,
       },
       easy: {
         speed: 3,
         spawnRate: 1400,
         count: 90,
+        teams: 2,
       },
       medium: {
         speed: 4,
         spawnRate: 1200,
         count: 110,
+        teams: 4,
       },
       hard: {
         speed: 5,
         spawnRate: 1000,
         count: 130,
+        teams: 8,
       },
       epic: {
         speed: 6,
         spawnRate: 800,
         count: 170,
+        teams: 16,
       },
     };
   }
@@ -73,6 +74,7 @@ class Helpers {
     base.classList.add("unselectable", identifier);
 
     object.id = `${identifier}-${id}`;
+    object.dataset.wounds = this.woundTable(identifier);
     base.appendChild(object);
     return base;
   }

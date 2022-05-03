@@ -3,6 +3,7 @@ import {
   enemyDivisionNames,
   defeatBackgrounds,
   enemySelectionLibrary,
+  enemySelectionTeamsLibrary,
   sound,
 } from "./modules/assets.js";
 import Helpers from "./modules/helpers.js";
@@ -89,6 +90,54 @@ window.onload = () => {
     },
   };
 
+  const spawnConfig = {
+    teasy: {
+      enemySpeed: 1,
+      waveCount: 18,
+      enemySpawnFrequency: 2400,
+      playerDamageTaken: 5,
+      pointsEarned: 10,
+      troopers: 17,
+      teams: 1,
+    },
+    easy: {
+      enemySpeed: 1.1,
+      waveCount: 22,
+      enemySpawnFrequency: 2300,
+      playerDamageTaken: 8,
+      pointsEarned: 12,
+      troopers: 20,
+      teams: 2,
+    },
+    medium: {
+      enemySpeed: 1.2,
+      waveCount: 28,
+      enemySpawnFrequency: 2100,
+      playerDamageTaken: 10,
+      pointsEarned: 14,
+      troopers: 22,
+      teams: 6,
+    },
+    hard: {
+      enemySpeed: 1.3,
+      waveCount: 34,
+      enemySpawnFrequency: 1900,
+      playerDamageTaken: 12,
+      pointsEarned: 16,
+      troopers: 26,
+      teas: 8,
+    },
+    epic: {
+      enemySpeed: 1.4,
+      waveCount: 40,
+      enemySpawnFrequency: 1500,
+      playerDamageTaken: 16,
+      pointsEarned: 18,
+      troopers: 28,
+      teams: 12,
+    },
+  };
+
   // Variables
   let currentPlayerAmmo = maxPlayerAmmo;
   let currentPlayerHitpoints = maxPlayerHitpoints;
@@ -157,6 +206,7 @@ window.onload = () => {
 
   // Assets
   let enemySelection = enemySelectionLibrary;
+  let enemyTeamsSelection = enemySelectionTeamsLibrary;
   let endOfRoundBg = roundBg;
   let enemyDivision = enemyDivisionNames;
   let defeatBg = defeatBackgrounds;
@@ -305,25 +355,27 @@ window.onload = () => {
   function killTarget(targetElement) {
     // Get some data
     let hitPosition = targetElement.getBoundingClientRect();
-    let camoColor = targetElement.querySelector("img").dataset.camo;
+    let targetElementImage = targetElement.querySelector("img");
+    let { camo, wounds } = targetElementImage.dataset;
     let targetInterval = targetElement.dataset.interval;
-
+    targetElementImage.dataset.wounds = parseInt(wounds) - 1;
     // Create a dead body to place
-    let casualty = makeCasualty(camoColor);
-    battlefield.appendChild(casualty);
-    //playSound("deathmoan");
+    if (targetElementImage.dataset.wounds === "0") {
+      let casualty = makeCasualty(camo);
+      battlefield.appendChild(casualty);
 
-    // Stop the affected interval
-    clearInterval(targetInterval);
+      // Stop the affected interval
+      clearInterval(targetInterval);
 
-    // Calculate where the dead body should be placed
-    let casualtyTop = hitPosition.y - 35;
-    let casualtyLeft = targetElement.dataset.left - hitPosition.width / 2;
-    casualty.style.top = casualtyTop + "px";
-    casualty.style.left = casualtyLeft + "px";
+      // Calculate where the dead body should be placed
+      let casualtyTop = hitPosition.y - 35;
+      let casualtyLeft = targetElement.dataset.left - hitPosition.width / 2;
+      casualty.style.top = casualtyTop + "px";
+      casualty.style.left = casualtyLeft + "px";
 
-    // Remove the target that was hit
-    targetElement.remove();
+      // Remove the target that was hit
+      targetElement.remove();
+    }
   }
 
   function fireOrReload() {
@@ -343,13 +395,6 @@ window.onload = () => {
       el.style.top = pos + "px";
     }, 15 - enemySpeed);
     el.dataset.interval = interval; // save the interval number so we can cancel later
-  }
-
-  // Stop target movement
-  function stopTargetMove(id) {
-    window.clearInterval(moveTargetInterval);
-    targetIsMoving = false;
-    targetStoppedPosition = document.getElementById("target-1").offsetLeft;
   }
 
   function removeTargets() {
@@ -376,36 +421,6 @@ window.onload = () => {
     clearBullets.click();
     removeTargets();
     clearInterval(gameInterval);
-  }
-
-  /**
-   * [0]================[0]
-   *  |     PRACTICE     |
-   * [0]================[0]
-   */
-
-  // Create a target to shoot at
-  // TODO - code up practice mode
-  function generateTarget() {
-    // Practice targets
-    const id = _helpers.uuid();
-    let fullTarget = document.createElement("div");
-    let targetInnerRing = document.createElement("div");
-    let targetBullsEye = document.createElement("div");
-
-    fullTarget.id = "target-o-" + id;
-    fullTarget.classList.add("target-outer-ring");
-
-    targetInnerRing.id = "target-i-" + id;
-    targetInnerRing.classList.add("target-inner-ring");
-
-    targetBullsEye.id = "target-b-" + id;
-    targetBullsEye.classList.add("target-bullseye");
-
-    fullTarget.appendChild(targetInnerRing);
-    targetInnerRing.appendChild(targetBullsEye);
-
-    return fullTarget;
   }
 
   /**
@@ -446,13 +461,13 @@ window.onload = () => {
   }
 
   // Generate enemy trooper
-  function generateEnemy() {
+  function generateEnemy(type) {
     let choice = _helpers.randomInt(enemySelection.length);
     let trooper = document.createElement("img");
     let camoColor = enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
     trooper.src = enemySelection[choice];
     trooper.dataset.camo = camoColor;
-    return _helpers.generateItem(trooper, "trooper");
+    return _helpers.generateItem(trooper, type);
   }
 
   // Create a dead model when a target is killed
@@ -466,9 +481,11 @@ window.onload = () => {
     return _helpers.generateItem(casualty, "casualty");
   }
 
-  function createAndSpawnEnemy() {
+  function spawnEnemy() {
     enemyCount++;
-    let target = generateEnemy();
+    let target;
+
+    target = generateEnemy("trooper");
     let targetPosition = _helpers.generateSpawnLocation();
     battlefield.appendChild(target);
     target.style.top = targetPosition.top;
@@ -566,7 +583,7 @@ window.onload = () => {
     }
     introMusic.muted = false;
     introMusic.currentTime = 0;
-    introMusic.play();
+    //introMusic.play();
   }
 
   function logStartGame() {
@@ -725,7 +742,7 @@ window.onload = () => {
     gameInterval = setInterval(() => {
       if (i < waveCount) {
         i++;
-        createAndSpawnEnemy();
+        spawnEnemy();
       } else {
         clearInterval(gameInterval);
       }
@@ -745,43 +762,12 @@ window.onload = () => {
       return;
     }
     enemyStatsSet = true;
-    switch (difficultyLevel) {
-      case "teasy":
-        enemySpeed = 1;
-        waveCount = 18;
-        enemySpawnFrequency = 2400;
-        playerDamageTaken = 5;
-        pointsEarned = 10;
-        break;
-      case "easy":
-        enemySpeed = 1.1;
-        waveCount = 22;
-        enemySpawnFrequency = 2300;
-        playerDamageTaken = 8;
-        pointsEarned = 12;
-        break;
-      case "medium":
-        enemySpeed = 1.2;
-        waveCount = 28;
-        enemySpawnFrequency = 2100;
-        playerDamageTaken = 10;
-        pointsEarned = 14;
-        break;
-      case "hard":
-        enemySpeed = 1.3;
-        waveCount = 34;
-        enemySpawnFrequency = 1900;
-        playerDamageTaken = 12;
-        pointsEarned = 16;
-        break;
-      case "epic":
-        enemySpeed = 1.4;
-        waveCount = 40;
-        enemySpawnFrequency = 1500;
-        playerDamageTaken = 16;
-        pointsEarned = 18;
-        break;
-    }
+
+    enemySpeed = spawnConfig[difficultyLevel].enemySpeed;
+    waveCount = spawnConfig[difficultyLevel].waveCount;
+    enemySpawnFrequency = spawnConfig[difficultyLevel].enemySpawnFrequency;
+    playerDamageTaken = spawnConfig[difficultyLevel].playerDamageTaken;
+    pointsEarned = spawnConfig[difficultyLevel].pointsEarned;
   }
   /**
    * [0]================[0]
@@ -938,6 +924,8 @@ window.onload = () => {
     let id = e.target.id;
     if (_helpers.isValidTarget(id) && !reloading) {
       currentPlayerAmmo--;
+
+      console.log("fired");
 
       // Handle hits
       if (fireOrReload()) {
