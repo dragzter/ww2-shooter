@@ -5,10 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script
-      src="https://kit.fontawesome.com/ac88d674b7.js"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://requirejs.org/docs/release/2.3.6/comments/require.js"></script>
+    <script src="https://kit.fontawesome.com/ac88d674b7.js" crossorigin="anonymous"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
@@ -20,6 +18,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <script src="dist/bundle.js"></script>
   </head>
   <body>
     <div id="shop-modal">
@@ -27,9 +26,7 @@
         <h1>Shop Upgrades</h1>
         <div id="shop-container"></div>
         <div class="buttons-container">
-          <button id="back-to-menu">
-            <i class="fas fa-arrow-left"></i> Back
-          </button>
+          <button id="back-to-menu"><i class="fas fa-arrow-left"></i> Back</button>
           <div class="ui-info-warning" id="shop-points"></div>
         </div>
       </div>
@@ -41,15 +38,13 @@
             <h1>You are the Lone Rifleman.</h1>
             <hr />
             <p>
-              You are the last living member of your Rifle company defending a
-              medical convoy. Your orders are to hold off the German attack at
-              any cost. Do not let the enemy pass or you will be overrun and the
-              men being evacuated will surely perish. The enemy is determined to
-              fight to the bitter end. You must survive the onslaught in order
-              for your brethren to survive.
-              <br /><br />Every time you repel a wave of infantry, they are sure
-              to return with greater ferocity and numbers. <br /><br />Much
-              depends on your accuracy!
+              You are the last living member of your Rifle company defending a medical convoy. Your
+              orders are to hold off the German attack at any cost. Do not let the enemy pass or you
+              will be overrun and the men being evacuated will surely perish. The enemy is
+              determined to fight to the bitter end. You must survive the onslaught in order for
+              your brethren to survive.
+              <br /><br />Every time you repel a wave of infantry, they are sure to return with
+              greater ferocity and numbers. <br /><br />Much depends on your accuracy!
             </p>
 
             <p>Select Difficulty and press "Start" to begin Round 1</p>
@@ -62,12 +57,10 @@
               <option value="epic">Epic</option>
             </select>
             <div class="info-text">
-              <em
-                >The expected enemy strength will increase with every round.</em
-              >
+              <em>The expected enemy strength will increase with every round.</em>
               <p class="ui-info">
-                You will have the opportunity to spend points on upgrades after
-                round 1. Click the "SHOP" button in the round summary.
+                You will have the opportunity to spend points on upgrades after round 1. Click the
+                "SHOP" button in the round summary.
               </p>
             </div>
             <hr />
@@ -90,13 +83,10 @@
           <div id="defeat-content">
             <h1>You have been overrun.</h1>
             <p>
-              The enemy has broken through, you have been captured. Undoubtedly,
-              your comrades in arms have been captured or killed. This is a dark
-              day for the Allies.
+              The enemy has broken through, you have been captured. Undoubtedly, your comrades in
+              arms have been captured or killed. This is a dark day for the Allies.
             </p>
-            <button id="restart">
-              <i class="fas fa-play"></i> Start New Game
-            </button>
+            <button id="restart"><i class="fas fa-play"></i> Start New Game</button>
           </div>
         </div>
       </div>
@@ -116,13 +106,13 @@
         draggable="false"
         id="cover"
         class="unselectable"
-        src="assets/sandbags.png"
+        src="./src/assets/sandbags.png"
         alt=""
       />
       <img
         id="player"
         class="unselectable invisible"
-        src="./assets/rifleman-5.png"
+        src="./src/assets/rifleman-5.png"
         alt="player"
         draggable="false"
       />
@@ -153,12 +143,8 @@
         <span id="tkills">Total Kills: 0</span>
         <i class="fas fa-skull-crossbones"></i>
       </div>
-      <button class="invisible" id="clear">
-        <i class="fas fa-eraser"></i> Clear
-      </button>
-      <button class="invisible" id="reload">
-        <i class="fas fa-redo"></i> Reload
-      </button>
+      <button class="invisible" id="clear"><i class="fas fa-eraser"></i> Clear</button>
+      <button class="invisible" id="reload"><i class="fas fa-redo"></i> Reload</button>
       <p class="d-i-block">Press <span>R</span> to reload</p>
       <!-- <hr />
       <p>Press <span>R</span> to reload</p>
@@ -167,14 +153,11 @@
     <div id="notify-window-too-short">
       <div><i class="fas fa-exclamation-triangle"></i></div>
       The game requires a minimum browser window dimension of at least
-      <strong>1025 x 950 pixels</strong> to play. Adjust your browser height and
-      refresh the page.
+      <strong>1025 x 950 pixels</strong> to play. Adjust your browser height and refresh the page.
     </div>
-    <script type="module" src="modules/helpers.js"></script>
-    <script type="module" src="modules/assets.js"></script>
-    <script type="module" src="modules/upgrade.js"></script>
-    <script type="module" src="modules/memory.js"></script>
-    <script type="module" src="modules/icons.js"></script>
-    <script type="module" src="script.js"></script>
+    <!-- <script type="module" src="dist/script.js"></script> -->
+    <script>
+      require(["script"]);
+    </script>
   </body>
 </html>

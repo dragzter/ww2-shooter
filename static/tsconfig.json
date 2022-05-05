@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es2020",
+    "strict": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "outFile": "dist/bundle.js",
+    "outDir": "dist",
+    "alwaysStrict": true,
+    "declaration": true,
+    "strictNullChecks": false
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["./dist/bundle.d.ts"]
+}

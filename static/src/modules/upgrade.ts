@@ -4,7 +4,7 @@ class Upgrade {
   _helper = new Helpers();
   _icon = new Icon();
 
-  getUpgradeCard(upgradeConfig) {
+  getUpgradeCard(upgradeConfig: any) {
     const { type, description, cost, level, max_level, value } = upgradeConfig;
     // Build html
     const card = this.getWrapperHtml();
@@ -65,7 +65,7 @@ class Upgrade {
     return card;
   }
   getWrapperHtml() {
-    const html = document.createElement("div");
+    const html: any = document.createElement("div");
     const id = this._helper.uuid();
     html.classList.add("shop-item", "card");
     html.setAttribute.id = id;
