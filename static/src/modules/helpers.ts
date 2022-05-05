@@ -1,3 +1,5 @@
+import { DifficultyBounds } from "src/types";
+
 class Helpers {
   uuid() {
     let s4 = () => {
@@ -8,12 +10,12 @@ class Helpers {
     return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
   }
 
-  randomInt(n) {
+  randomInt(n: number) {
     return Math.floor(Math.random() * n);
   }
 
-  woundTable(key) {
-    let wounds = {
+  woundTable(key: string) {
+    let wounds: any = {
       trooper: 1,
       team: 2,
       tank: 10,
@@ -21,7 +23,7 @@ class Helpers {
     return wounds[key];
   }
 
-  difficultyBounds() {
+  difficultyBounds(): DifficultyBounds {
     return {
       teasy: {
         speed: 2,
@@ -66,10 +68,10 @@ class Helpers {
    * @param {string} identifier - string identifier
    * @returns base - the composed html element.
    */
-  generateItem(object, identifier) {
+  generateItem(object: any, identifier: any): HTMLElement {
     const id = this.uuid();
-    let base = document.createElement("div");
-    base.setAttribute.draggable = false;
+    let base: HTMLElement = document.createElement("div");
+    (base.setAttribute as { [key: string]: any }).draggable = false;
     base.id = `base-${identifier}-${id}`;
     base.classList.add("unselectable", identifier);
 
@@ -107,7 +109,7 @@ class Helpers {
     return ["battlefield", "target", "bullet", "enemy", "trooper"];
   }
 
-  isValidTarget(target) {
+  isValidTarget(target: any) {
     const valTar = this.getValidTargets();
     return valTar.some((validTarget) => {
       return target.indexOf(validTarget) > -1;

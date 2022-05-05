@@ -1,0 +1,22 @@
+{
+  "name": "ww2-shooter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragzter/ww2-shooter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dragzter/ww2-shooter/issues"
+  },
+  "homepage": "https://github.com/dragzter/ww2-shooter#readme",
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  }
+}

@@ -140,7 +140,7 @@ div {
 #battlefield {
   width: 1000px;
   height: 900px;
-  background-image: url(../assets/grass2.png);
+  background-image: url(../src/assets/grass2.png);
   background-position: center;
   background-size: cover;
   margin: 10px auto 10px;
@@ -247,8 +247,8 @@ img#player {
   left: 40%;
   z-index: 20;
   width: 60px;
-  filter: drop-shadow(1px 1px 0 white) drop-shadow(-1px 1px 0 white)
-    drop-shadow(1px -1px 0 white) drop-shadow(-1px -1px 0 white);
+  filter: drop-shadow(1px 1px 0 white) drop-shadow(-1px 1px 0 white) drop-shadow(1px -1px 0 white)
+    drop-shadow(-1px -1px 0 white);
 }
 .target {
   width: 100px;
@@ -284,7 +284,7 @@ img#player {
   bottom: 4px;
   right: 5px;
   background: #000;
-  background-image: url(../assets/cropped-black-metal-background.png);
+  background-image: url(../src/assets/cropped-black-metal-background.png);
   background-position: center;
   background-size: cover;
   padding: 3px 6px;
@@ -381,7 +381,7 @@ select {
   appearance: none;
   cursor: pointer;
   font-family: "Source Code Pro", monospace;
-  background: url(../assets/dropdown.png) 96% / 15% no-repeat #fff;
+  background: url(../src/assets/dropdown.png) 96% / 15% no-repeat #fff;
 }
 .trooper {
   width: 70px;
@@ -409,7 +409,7 @@ select {
   transform: translateX(-50%);
   padding: 30px;
   background-color: rgb(240, 240, 240);
-  background-image: url(../assets/introbanner.jpg);
+  background-image: url(../src/assets/introbanner.jpg);
   background-size: cover;
   background-position: top center;
   border-radius: 3px;

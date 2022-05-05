@@ -1,5 +1,5 @@
 class Icon {
-  make(classes) {
+  make(classes: string) {
     const i = document.createElement("i");
     const css = classes.split(" ");
     i.classList.add(...css);
