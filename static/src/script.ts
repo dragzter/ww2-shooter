@@ -627,6 +627,22 @@ window.onload = () => {
     state.save({ points, totalKills, gameRound });
   }
 
+  function movePlayer(arrow: string) {
+    const currentPosition = getPlayerPosition();
+    const maxLeft = 50;
+    const maxRight = 950;
+    const step = 50;
+    let newPosition;
+    if (arrow === "ArrowLeft") {
+      // move player left
+      newPosition = currentPosition - step;
+    } else {
+      // move player right
+      newPosition = currentPosition + step;
+    }
+    player.style.left = newPosition + "px";
+  }
+
   /**
    * Game announcement for various events
    * @param {string} message
@@ -903,8 +919,14 @@ window.onload = () => {
     showUpgradePurchaseAbility();
   });
 
+  function getPlayerPosition() {
+    const { left } = window.getComputedStyle(player);
+    return parseInt(left);
+  }
+
   addEventListener("mousemove", (e) => {
     const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x);
+    console.log(angle);
     player.style.transform = `rotate(${angle + 1.5}rad)`;
   });
 
@@ -917,8 +939,6 @@ window.onload = () => {
     let id = e.target.id;
     if (_helpers.isValidTarget(id) && !reloading) {
       currentPlayerAmmo--;
-
-      console.log("fired");
 
       // Handle hits
       if (fireOrReload()) {
@@ -983,6 +1003,10 @@ window.onload = () => {
     if (event.code == "KeyC") {
       clearBullets.click();
     }
+
+    if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
+      movePlayer(event.code);
+    }
   });
 
   // Have to interacting with the app to play intro music
@@ -990,7 +1014,7 @@ window.onload = () => {
     document.addEventListener("click", () => {
       if (!introHasPlayed && !windowTooShort) {
         introHasPlayed = true;
-        //startIntroMusic();
+        startIntroMusic();
       }
     });
   }
