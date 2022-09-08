@@ -62,6 +62,10 @@ class Helpers {
     console.log("You are importing logTest() from helpers.js");
   }
 
+  create(tag: string) {
+    return document.createElement(tag);
+  }
+
   /**
    *
    * @param {node} object - The node being appended to the base

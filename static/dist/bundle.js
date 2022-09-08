@@ -149,6 +149,9 @@ define("modules/helpers", ["require", "exports"], function (require, exports) {
         logTest() {
             console.log("You are importing logTest() from helpers.js");
         }
+        create(tag) {
+            return document.createElement(tag);
+        }
         /**
          *
          * @param {node} object - The node being appended to the base
@@ -325,14 +328,99 @@ define("modules/memory", ["require", "exports"], function (require, exports) {
     }
     exports.default = Memory;
 });
-define("script", ["require", "exports", "modules/assets", "modules/helpers", "modules/upgrade", "modules/memory"], function (require, exports, assets_1, helpers_1, upgrade_1, memory_1) {
+define("modules/unit", ["require", "exports", "modules/helpers"], function (require, exports, helpers_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class Unit {
+        constructor() {
+            this._helper = new helpers_1.default();
+            this._singleSpawnLocations = [
+                "0",
+                "80px",
+                "160px",
+                "240px",
+                "320px",
+                "380px",
+                "460px",
+                "540px",
+                "620px",
+                "700px",
+                "780px",
+                "860px",
+                "940px",
+            ];
+            this._teamSpawnLocations = ["0", "450px", "900px"];
+        }
+        /**
+         *
+         * @param {node} object - The node being appended to the base
+         * @param {string} identifier - string identifier
+         * @returns base - the composed html element.
+         */
+        generateItem(object, identifier) {
+            const id = this._helper.uuid();
+            let base = document.createElement("div");
+            base.setAttribute.draggable = false;
+            base.id = `base-${identifier}-${id}`;
+            base.classList.add("unselectable", identifier);
+            object.id = `${identifier}-${id}`;
+            object.dataset.wounds = this.woundTable(identifier);
+            base.appendChild(object);
+            return base;
+        }
+        woundTable(key) {
+            let wounds = {
+                trooper: 1,
+                team: 2,
+                tank: 10,
+            };
+            return wounds[key];
+        }
+        // Randown spawn location for enemy
+        generateSpawnLocation(locations) {
+            let choice = this._helper.randomInt(locations.length);
+            return {
+                top: "0px",
+                left: locations[choice],
+            };
+        }
+        generateCasualty(camoColor) {
+            let casualty = this._helper.create("img");
+            if (camoColor === "gray") {
+                casualty.src = "src/assets/casualty-gray.png";
+            }
+            else {
+                casualty.src = "src/assets/casualty-green.png";
+            }
+            return this.generateItem(casualty, "casualty");
+        }
+        generateEnemy(type, enemySelection) {
+            let spawnLocations = {
+                trooper: this._singleSpawnLocations,
+                team: this._teamSpawnLocations,
+            };
+            let choice = this._helper.randomInt(enemySelection.length);
+            let enemyUnit = document.createElement("img");
+            let camoColor = enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
+            enemyUnit.src = enemySelection[choice];
+            enemyUnit.dataset.camo = camoColor;
+            return [this.generateItem(enemyUnit, type), this.generateSpawnLocation(spawnLocations[type])];
+        }
+        spawnTrooper() { }
+        spawnTeam() { }
+        spawnEnemy() { }
+    }
+    exports.default = Unit;
+});
+define("script", ["require", "exports", "modules/assets", "modules/helpers", "modules/upgrade", "modules/memory", "modules/unit"], function (require, exports, assets_1, helpers_2, upgrade_1, memory_1, unit_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     window.onload = () => {
         // Init Classes
         const _ups = new upgrade_1.default();
-        const _helpers = new helpers_1.default();
+        const _helpers = new helpers_2.default();
         const state = new memory_1.default();
+        const _U = new unit_1.default();
         document.documentElement.style.setProperty("--animate-duration", ".5s");
         // DOM
         let shopModal = document.getElementById("shop-modal");
@@ -452,7 +540,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
         let currentPlayerAmmo = maxPlayerAmmo;
         let currentPlayerHitpoints = maxPlayerHitpoints;
         let difficultyLevel = "teasy";
-        let gameInterval;
+        let waveInterval;
         let msgInterval;
         // Base enemy stats
         let enemySpeed = 1;
@@ -501,7 +589,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
         battleSound.loop = true;
         battleSound.volume = 0.1;
         let playerWeapon = enfield;
-        const playerCenter = getCenter(player);
+        let playerCenter = getCenter();
         // Assets
         let enemySelection = assets_1.enemySelectionLibrary;
         let enemyTeamsSelection = assets_1.enemySelectionTeamsLibrary;
@@ -527,8 +615,8 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
                 notifyWindowTooShort.style.display = "block";
             }
         }
-        function getCenter(element) {
-            const { left, top, width, height } = element.getBoundingClientRect();
+        function getCenter() {
+            const { left, top, width, height } = document.querySelector("#player").getBoundingClientRect();
             return { x: left + width / 2, y: top + height / 2 };
         }
         // PLay sound files
@@ -646,7 +734,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
             targetElementImage.dataset.wounds = parseInt(wounds) - 1;
             // Create a dead body to place
             if (targetElementImage.dataset.wounds === "0") {
-                let casualty = makeCasualty(camo);
+                let casualty = _U.generateCasualty(camo);
                 battlefield.appendChild(casualty);
                 // Stop the affected interval
                 clearInterval(targetInterval);
@@ -663,7 +751,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
             return currentPlayerAmmo >= 0;
         }
         // Move Target
-        function moveEnemy(el) {
+        function move(el) {
             let pos = 1;
             let interval = setInterval(() => {
                 if (pos < 900) {
@@ -698,7 +786,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
             loadWeapon();
             clearBullets.click();
             removeTargets();
-            clearInterval(gameInterval);
+            clearInterval(waveInterval);
         }
         /**
          * [0]================[0]
@@ -733,35 +821,19 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
             }
             return false;
         }
-        // Generate enemy trooper
-        function generateEnemy(type) {
-            let choice = _helpers.randomInt(enemySelection.length);
-            let trooper = document.createElement("img");
-            let camoColor = enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
-            trooper.src = enemySelection[choice];
-            trooper.dataset.camo = camoColor;
-            return _helpers.generateItem(trooper, type);
-        }
-        // Create a dead model when a target is killed
-        function makeCasualty(camoColor) {
-            let casualty = document.createElement("img");
-            if (camoColor === "gray") {
-                casualty.src = "src/assets/casualty-gray.png";
-            }
-            else {
-                casualty.src = "src/assets/casualty-green.png";
-            }
-            return _helpers.generateItem(casualty, "casualty");
-        }
         function spawnEnemy() {
             enemyCount++;
-            let target = generateEnemy("trooper");
-            let targetPosition = _helpers.generateSpawnLocation();
-            battlefield.appendChild(target);
-            target.style.top = targetPosition.top;
-            target.style.left = targetPosition.left;
-            target.dataset.left = parseInt(targetPosition.left).toString();
-            moveEnemy(target);
+            const [target, targetPosition] = _U.generateEnemy("trooper", enemySelection);
+            moveSpawn(target, targetPosition);
+        }
+        function spawnTeam() { }
+        function spawnTrooper() { }
+        function moveSpawn(spawn, position) {
+            battlefield.appendChild(spawn);
+            spawn.style.top = position.top;
+            spawn.style.left = position.left;
+            spawn.dataset.left = parseInt(position.left).toString();
+            move(spawn);
         }
         // Create bullet hole element and return it
         function createBulletHole() {
@@ -842,7 +914,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
             }
             introMusic.muted = false;
             introMusic.currentTime = 0;
-            //introMusic.play();
+            introMusic.play();
         }
         function logStartGame() {
             console.log("Starting game: ", {
@@ -996,13 +1068,13 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
         // Begin spawning enemy targets when a round begins
         function startEnemeyWave() {
             let i = 0;
-            gameInterval = setInterval(() => {
+            waveInterval = setInterval(() => {
                 if (i < waveCount) {
                     i++;
                     spawnEnemy();
                 }
                 else {
-                    clearInterval(gameInterval);
+                    clearInterval(waveInterval);
                 }
             }, enemySpawnFrequency);
         }
@@ -1156,7 +1228,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
         }
         addEventListener("mousemove", (e) => {
             const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x);
-            console.log(angle);
+            playerCenter = getCenter();
             player.style.transform = `rotate(${angle + 1.5}rad)`;
         });
         // Make bullet holes - SHOOT
@@ -1220,6 +1292,7 @@ define("script", ["require", "exports", "modules/assets", "modules/helpers", "mo
         });
         // Handle some key binds
         document.addEventListener("keydown", function (event) {
+            playerCenter = getCenter();
             if (event.code == "KeyR") {
                 reload.click();
             }

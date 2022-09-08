@@ -50,6 +50,10 @@ declare module "types" {
         troopers: number;
         teams: number;
     }
+    export interface SpawnLocation {
+        top: string;
+        left: string;
+    }
     export interface CustomHTML extends HTMLElement {
         value: any;
         style: any;
@@ -76,6 +80,7 @@ declare module "modules/helpers" {
         woundTable(key: string): any;
         difficultyBounds(): DifficultyBounds;
         logTest(): void;
+        create(tag: string): HTMLElement;
         /**
          *
          * @param {node} object - The node being appended to the base
@@ -128,5 +133,31 @@ declare module "modules/memory" {
         save(state: any): void;
     }
     export default Memory;
+}
+declare module "modules/unit" {
+    import { SpawnLocation } from "types";
+    export default class Unit {
+        private _helper;
+        private _teamSpawnLocations;
+        private _singleSpawnLocations;
+        constructor();
+        /**
+         *
+         * @param {node} object - The node being appended to the base
+         * @param {string} identifier - string identifier
+         * @returns base - the composed html element.
+         */
+        generateItem(object: any, identifier: any): HTMLElement;
+        woundTable(key: string): any;
+        generateSpawnLocation(locations: string[]): {
+            top: string;
+            left: string;
+        };
+        generateCasualty(camoColor: string): HTMLElement;
+        generateEnemy(type: any, enemySelection: string[]): [HTMLElement, SpawnLocation];
+        spawnTrooper(): void;
+        spawnTeam(): void;
+        spawnEnemy(): void;
+    }
 }
 declare module "script" { }

@@ -9,13 +9,16 @@ import {
 import Helpers from "./modules/helpers";
 import Upgrade from "./modules/upgrade";
 import Memory from "./modules/memory";
-import { SpawnConfig, UpgradeConfig, CustomHTML } from "./types";
+import Unit from "./modules/unit";
+
+import { SpawnConfig, UpgradeConfig, CustomHTML, SpawnLocation } from "./types";
 
 window.onload = () => {
   // Init Classes
   const _ups = new Upgrade();
   const _helpers = new Helpers();
   const state = new Memory();
+  const _U = new Unit();
 
   document.documentElement.style.setProperty("--animate-duration", ".5s");
 
@@ -144,7 +147,7 @@ window.onload = () => {
   let currentPlayerAmmo: number = maxPlayerAmmo;
   let currentPlayerHitpoints: number = maxPlayerHitpoints;
   let difficultyLevel: string = "teasy";
-  let gameInterval: number;
+  let waveInterval: number;
   let msgInterval: number;
 
   // Base enemy stats
@@ -200,7 +203,7 @@ window.onload = () => {
   battleSound.volume = 0.1;
 
   let playerWeapon = enfield;
-  const playerCenter = getCenter(player);
+  let playerCenter = orientPlayer();
 
   // Assets
   let enemySelection = enemySelectionLibrary;
@@ -230,8 +233,8 @@ window.onload = () => {
     }
   }
 
-  function getCenter(element: any) {
-    const { left, top, width, height } = element.getBoundingClientRect();
+  function orientPlayer() {
+    const { left, top, width, height } = document.querySelector("#player").getBoundingClientRect();
     return { x: left + width / 2, y: top + height / 2 };
   }
 
@@ -359,7 +362,7 @@ window.onload = () => {
     targetElementImage.dataset.wounds = parseInt(wounds) - 1;
     // Create a dead body to place
     if (targetElementImage.dataset.wounds === "0") {
-      let casualty = makeCasualty(camo);
+      let casualty = _U.generateCasualty(camo);
       battlefield.appendChild(casualty);
 
       // Stop the affected interval
@@ -381,7 +384,7 @@ window.onload = () => {
   }
 
   // Move Target
-  function moveEnemy(el: any): void {
+  function move(el: any): void {
     let pos = 1;
     let interval = setInterval(() => {
       if (pos < 900) {
@@ -418,7 +421,7 @@ window.onload = () => {
     loadWeapon();
     clearBullets.click();
     removeTargets();
-    clearInterval(gameInterval);
+    clearInterval(waveInterval);
   }
 
   /**
@@ -436,7 +439,7 @@ window.onload = () => {
     initializeStartValues();
     showUiElements();
     logStartGame();
-    startEnemeyWave();
+    startEnemyWave();
   }
 
   function debugMode(): void {
@@ -458,36 +461,26 @@ window.onload = () => {
     return false;
   }
 
-  // Generate enemy trooper
-  function generateEnemy(type: any) {
-    let choice = _helpers.randomInt(enemySelection.length);
-    let trooper = document.createElement("img");
-    let camoColor = enemySelection[choice].indexOf("gray") > -1 ? "gray" : "green";
-    trooper.src = enemySelection[choice];
-    trooper.dataset.camo = camoColor;
-    return _helpers.generateItem(trooper, type);
-  }
-
-  // Create a dead model when a target is killed
-  function makeCasualty(camoColor: any) {
-    let casualty = document.createElement("img");
-    if (camoColor === "gray") {
-      casualty.src = "src/assets/casualty-gray.png";
-    } else {
-      casualty.src = "src/assets/casualty-green.png";
-    }
-    return _helpers.generateItem(casualty, "casualty");
-  }
-
   function spawnEnemy(): void {
     enemyCount++;
-    let target: HTMLElement = generateEnemy("trooper");
-    let targetPosition = _helpers.generateSpawnLocation();
-    battlefield.appendChild(target);
-    target.style.top = targetPosition.top;
-    target.style.left = targetPosition.left;
-    target.dataset.left = parseInt(targetPosition.left).toString();
-    moveEnemy(target);
+    const [target, targetPosition]: [HTMLElement, SpawnLocation] = _U.generateEnemy(
+      "trooper",
+      enemySelection
+    );
+
+    moveSpawn(target, targetPosition);
+  }
+
+  function spawnTeam() {}
+
+  function spawnTrooper() {}
+
+  function moveSpawn(spawn: HTMLElement, position: any) {
+    battlefield.appendChild(spawn);
+    spawn.style.top = position.top;
+    spawn.style.left = position.left;
+    spawn.dataset.left = parseInt(position.left).toString();
+    move(spawn);
   }
 
   // Create bullet hole element and return it
@@ -510,12 +503,12 @@ window.onload = () => {
     }
   }
 
-  function startBattleMusic() {
+  function startBattleMusic(): void {
     battleSound.currentTime = 0;
     battleSound.play();
   }
 
-  function stopBattleMusic() {
+  function stopBattleMusic(): void {
     battleSound.pause();
     battleSound.currentTime = 0;
   }
@@ -527,11 +520,11 @@ window.onload = () => {
   }
 
   // Check is the player is still alive
-  function playerIsOutOfHp() {
+  function playerIsOutOfHp(): boolean {
     return currentPlayerHitpoints <= 0;
   }
 
-  function damagePlayer() {
+  function damagePlayer(): void {
     enemyBrokenThrough++;
     announce("An enemy has broken through!");
     currentPlayerHitpoints -= playerDamageTaken;
@@ -553,7 +546,7 @@ window.onload = () => {
   }
 
   // The player is dead
-  function defeat() {
+  function defeat(): void {
     announce("You have been overrun!");
     resetGame();
     currentPlayerAmmo = 0;
@@ -579,7 +572,7 @@ window.onload = () => {
     }
     introMusic.muted = false;
     introMusic.currentTime = 0;
-    //introMusic.play();
+    introMusic.play();
   }
 
   function logStartGame() {
@@ -598,19 +591,19 @@ window.onload = () => {
    */
 
   // Sets a random enemy name at the beginning of the game
-  function setEnemyName() {
+  function setEnemyName(): void {
     let choice = _helpers.randomInt(enemyDivision.length);
     enemyNameElement.innerHTML = `<i class="fas fa-compress"></i>  ${enemyDivision[choice]}`;
   }
 
   // Position bullet hole
-  function placeBullet(bulletEl: any, e: any) {
+  function placeBullet(bulletEl: HTMLElement, e: MouseEvent) {
     bulletEl.style.left = e.offsetX - 2.5 + "px";
     bulletEl.style.top = e.offsetY - 2.5 + "px";
   }
 
   // Communicate state in ui - ammo count, reload etc.
-  function updateUi() {
+  function updateUi(): void {
     playerMaxAmmoDiv.textContent = `Max Ammo: ${maxPlayerAmmo}`;
     playerShootSpeedDiv.textContent = `Shoot Speed: ${playerShootSpeed}ms`;
     playerReloadSpeedDiv.textContent = `Reaload Speed: ${reloadSpeed}ms`;
@@ -647,7 +640,7 @@ window.onload = () => {
    * Game announcement for various events
    * @param {string} message
    */
-  function announce(message = "Unknown event") {
+  function announce(message: string = "Unknown event"): void {
     window.clearInterval(msgInterval);
     uiMessage.textContent = message;
     uiMessage.style.visibility = "visible";
@@ -750,14 +743,14 @@ window.onload = () => {
   }
 
   // Begin spawning enemy targets when a round begins
-  function startEnemeyWave(): void {
+  function startEnemyWave(): void {
     let i = 0;
-    gameInterval = setInterval(() => {
+    waveInterval = setInterval(() => {
       if (i < waveCount) {
         i++;
         spawnEnemy();
       } else {
-        clearInterval(gameInterval);
+        clearInterval(waveInterval);
       }
     }, enemySpawnFrequency);
   }
@@ -926,7 +919,7 @@ window.onload = () => {
 
   addEventListener("mousemove", (e) => {
     const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x);
-    console.log(angle);
+    playerCenter = orientPlayer();
     player.style.transform = `rotate(${angle + 1.5}rad)`;
   });
 
@@ -997,6 +990,7 @@ window.onload = () => {
 
   // Handle some key binds
   document.addEventListener("keydown", function (event) {
+    playerCenter = orientPlayer();
     if (event.code == "KeyR") {
       reload.click();
     }

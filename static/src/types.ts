@@ -30,6 +30,11 @@ export interface SpawnDetails {
   teams: number;
 }
 
+export interface SpawnLocation {
+  top: string;
+  left: string;
+}
+
 export interface CustomHTML extends HTMLElement {
   value: any;
   style: any;
